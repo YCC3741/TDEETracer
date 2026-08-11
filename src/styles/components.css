@@ -1113,7 +1113,7 @@ input,
 }
 
 .custom-tooltip-positioner {
-  z-index: 300;
+  z-index: 501;
   max-width: min(240px, var(--available-width));
 }
 
