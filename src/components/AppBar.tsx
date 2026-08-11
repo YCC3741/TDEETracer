@@ -8,6 +8,7 @@ interface AppBarProps {
   onImported: (mode: WorkMode | null) => void
   onOpenPlan: (planId: string) => void
   onStartPlan: () => void
+  onRestartTour: () => void
   onUserSelected: () => void
 }
 
@@ -17,6 +18,7 @@ export function AppBar({
   onImported,
   onOpenPlan,
   onStartPlan,
+  onRestartTour,
   onUserSelected,
 }: AppBarProps) {
   const { activeUser, selectedPlan } = useAppData()
@@ -27,6 +29,7 @@ export function AppBar({
         <WorkspaceDrawer
           onOpenPlan={onOpenPlan}
           onStartPlan={onStartPlan}
+          onRestartTour={onRestartTour}
           onUserSelected={onUserSelected}
           onImported={onImported}
         />
@@ -43,6 +46,7 @@ export function AppBar({
         <div
           className={`mode-switch-wrap${mode === 'home' ? ' hidden' : ''}`}
           aria-label="切換計算模式"
+          data-tour-anchor="mode-switch"
         >
           <span className={!isDiary ? 'active' : ''}>快速</span>
           <button

@@ -74,7 +74,7 @@ export function ProfileForm({ profile, onSubmit }: ProfileFormProps) {
 
   return (
     <form onSubmit={submit}>
-      <div className="form-grid">
+      <div className="form-grid" data-tour-anchor="quick-profile-fields">
         <SelectField
           label="性別"
           name="sex"
@@ -157,7 +157,7 @@ export function ProfileForm({ profile, onSubmit }: ProfileFormProps) {
         />
       </div>
 
-      <fieldset className="strategy-fieldset">
+      <fieldset className="strategy-fieldset" data-tour-anchor="quick-strategy">
         <legend>熱量策略</legend>
         <div className="segmented">
           <button
@@ -205,7 +205,11 @@ export function ProfileForm({ profile, onSubmit }: ProfileFormProps) {
         )}
       </fieldset>
 
-      <button className="primary-btn full" type="submit">
+      <button
+        className="primary-btn full"
+        type="submit"
+        data-tour-anchor="quick-submit"
+      >
         計算減重路程
       </button>
     </form>

@@ -44,6 +44,7 @@ export function StartDetailedPlanDialog({
           <Dialog.Popup
             className="confirm-dialog-popup plan-dialog-popup"
             initialFocus={inputRef}
+            data-tour-scope
           >
             <Dialog.Title className="confirm-dialog-title">
               開始精確計畫
@@ -64,7 +65,11 @@ export function StartDetailedPlanDialog({
               )}
             </Dialog.Description>
             {profile ? (
-              <form className="plan-dialog-form" onSubmit={submit}>
+              <form
+                className="plan-dialog-form"
+                data-tour-anchor="plan-dialog-form"
+                onSubmit={submit}
+              >
                 <label>
                   計畫名稱
                   <input

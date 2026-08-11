@@ -13,6 +13,7 @@ import { CreateUserDialog } from './CreateUserDialog'
 interface WorkspaceDrawerProps {
   onOpenPlan: (planId: string) => void
   onStartPlan: () => void
+  onRestartTour: () => void
   onUserSelected: () => void
   onImported: (mode: WorkMode | null) => void
 }
@@ -20,6 +21,7 @@ interface WorkspaceDrawerProps {
 export function WorkspaceDrawer({
   onOpenPlan,
   onStartPlan,
+  onRestartTour,
   onUserSelected,
   onImported,
 }: WorkspaceDrawerProps) {
@@ -336,6 +338,19 @@ export function WorkspaceDrawer({
                     accept="application/json,.json"
                     onChange={importData}
                   />
+                </section>
+
+                <section className="workspace-section workspace-tour-actions">
+                  <span className="workspace-label">Help</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false)
+                      window.setTimeout(onRestartTour, 0)
+                    }}
+                  >
+                    重新開始新手教學
+                  </button>
                 </section>
 
                 <div className="workspace-add-user-row">

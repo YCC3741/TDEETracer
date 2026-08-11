@@ -235,13 +235,21 @@
 
 .workspace-user-list button,
 .workspace-section-head button,
-.workspace-data-actions button {
+.workspace-data-actions button,
+.workspace-tour-actions button {
   min-height: 36px;
   padding: 7px 11px;
   border: 1px solid var(--line);
   border-radius: 9px;
   color: var(--muted);
   background: rgba(255, 255, 255, 0.025);
+}
+
+.workspace-data-actions button:hover,
+.workspace-tour-actions button:hover {
+  border-color: var(--line-strong);
+  color: var(--gold);
+  background: rgba(255, 210, 138, 0.07);
 }
 
 .workspace-user-list button.active {

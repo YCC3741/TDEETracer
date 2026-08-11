@@ -67,7 +67,7 @@ export function DiaryEditor({
   }
 
   return (
-    <section className="card diary-editor">
+    <section className="card diary-editor" data-tour-anchor="diary-editor">
       <header className="section-head">
         <div>
           <span className="eyebrow">{heading.eyebrow}</span>

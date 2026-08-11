@@ -11,6 +11,7 @@ import { todayString } from '../../domain/date'
 import { simulateWeightPath } from '../../domain/projection'
 import type { Profile } from '../../domain/types'
 import { profilesHaveSameSettings } from '../../domain/workspace'
+import { useTour } from '../tour/TourContext'
 import { ProfileForm } from './ProfileForm'
 import { QuickResults } from './QuickResults'
 
@@ -19,6 +20,7 @@ interface QuickPageProps {
 }
 
 export function QuickPage({ onDraftChanged }: QuickPageProps) {
+  const tour = useTour()
   const { activeUser, quickDraft, setQuickDraft, notify } = useAppData()
   const today = useMemo(() => new Date(), [])
   const simulation = useMemo(
@@ -71,6 +73,7 @@ export function QuickPage({ onDraftChanged }: QuickPageProps) {
     const draftChanged = !profilesHaveSameSettings(quickDraft, savedProfile)
     if (!setQuickDraft(savedProfile)) return
     notify('ok', '已儲存 Quick 草稿。')
+    if (tour.step?.id === 'quick-submit') tour.goTo('quick-results')
     if (draftChanged) onDraftChanged?.(savedProfile)
     buildSafetyWarnings(savedProfile, bmr).forEach((warning) =>
       notify(warning.type, warning.text),
@@ -89,7 +92,10 @@ export function QuickPage({ onDraftChanged }: QuickPageProps) {
       <div
         className={`quick-workspace${quickDraft && simulation ? ' has-results' : ''}`}
       >
-        <section className="card form-card">
+        <section
+          className="card form-card"
+          data-tour-anchor="quick-profile-card"
+        >
           <header className="section-head">
             <div>
               <span className="eyebrow">Profile & strategy</span>

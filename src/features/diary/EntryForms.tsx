@@ -5,6 +5,7 @@ import { estimateExerciseCalories } from '../../domain/calculations'
 import { EXERCISE_PRESETS } from '../../domain/constants'
 import { currentTimeString } from '../../domain/date'
 import type { DiaryEntry, ExerciseEntry, FoodEntry } from '../../domain/types'
+import { useTour } from '../tour/TourContext'
 
 interface EntryFormsProps {
   weight: number | null
@@ -352,47 +353,90 @@ export function WeightForm({
 }
 
 export function EntryForms(props: EntryFormsProps) {
+  const tour = useTour()
   const [tab, setTab] = useState<'food' | 'exercise' | 'weight'>('food')
+  const guidedTab =
+    tour.step?.id === 'food-form' || tour.step?.id === 'exercise-tab'
+      ? 'food'
+      : tour.step?.id === 'exercise-form' || tour.step?.id === 'weight-tab'
+        ? 'exercise'
+        : tour.step?.id === 'weight-form'
+          ? 'weight'
+          : null
+  const activeTab = guidedTab ?? tab
+
+  const addEntry = (entry: DiaryEntry): boolean => {
+    const saved = props.onAdd(entry)
+    if (!saved) return false
+    if (entry.type === 'food' && tour.step?.id === 'food-form') {
+      tour.goTo('exercise-tab')
+    }
+    if (entry.type === 'exercise' && tour.step?.id === 'exercise-form') {
+      tour.goTo('weight-tab')
+    }
+    return true
+  }
+
+  const setWeight = (weight: number): boolean => {
+    const saved = props.onSetWeight(weight)
+    if (saved && tour.step?.id === 'weight-form') tour.complete()
+    return saved
+  }
+
   return (
     <section className="entry-composer">
       <div className="segmented entry-tabs">
         <button
-          className={tab === 'food' ? 'active' : ''}
+          className={activeTab === 'food' ? 'active' : ''}
           type="button"
           onClick={() => setTab('food')}
         >
           新增飲食
         </button>
         <button
-          className={tab === 'exercise' ? 'active' : ''}
+          className={activeTab === 'exercise' ? 'active' : ''}
           type="button"
-          onClick={() => setTab('exercise')}
+          data-tour-anchor="exercise-tab"
+          onClick={() => {
+            setTab('exercise')
+            if (tour.step?.id === 'exercise-tab') tour.goTo('exercise-form')
+          }}
         >
           新增運動
         </button>
         <button
-          className={tab === 'weight' ? 'active' : ''}
+          className={activeTab === 'weight' ? 'active' : ''}
           type="button"
-          onClick={() => setTab('weight')}
+          data-tour-anchor="weight-tab"
+          onClick={() => {
+            setTab('weight')
+            if (tour.step?.id === 'weight-tab') tour.goTo('weight-form')
+          }}
         >
           記錄體重
         </button>
       </div>
-      {tab === 'food' ? (
-        <FoodForm onSubmit={props.onAdd} onError={props.onError} />
-      ) : tab === 'exercise' ? (
-        <ExerciseForm
-          weight={props.weight}
-          onSubmit={props.onAdd}
-          onError={props.onError}
-        />
+      {activeTab === 'food' ? (
+        <div data-tour-anchor="food-form">
+          <FoodForm onSubmit={addEntry} onError={props.onError} />
+        </div>
+      ) : activeTab === 'exercise' ? (
+        <div data-tour-anchor="exercise-form">
+          <ExerciseForm
+            weight={props.weight}
+            onSubmit={addEntry}
+            onError={props.onError}
+          />
+        </div>
       ) : (
-        <WeightForm
-          key={props.actualWeightKg ?? 'empty'}
-          initialWeight={props.actualWeightKg}
-          onSubmit={props.onSetWeight}
-          onError={props.onError}
-        />
+        <div data-tour-anchor="weight-form">
+          <WeightForm
+            key={props.actualWeightKg ?? 'empty'}
+            initialWeight={props.actualWeightKg}
+            onSubmit={setWeight}
+            onError={props.onError}
+          />
+        </div>
       )}
     </section>
   )

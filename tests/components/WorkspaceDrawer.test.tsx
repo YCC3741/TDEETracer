@@ -51,6 +51,7 @@ function renderDrawer(
       <WorkspaceDrawer
         onOpenPlan={onOpenPlan}
         onStartPlan={onStartPlan}
+        onRestartTour={vi.fn()}
         onUserSelected={onUserSelected}
         onImported={vi.fn()}
       />

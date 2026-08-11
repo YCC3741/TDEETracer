@@ -18,6 +18,9 @@ import { profilesHaveSameSettings } from './domain/workspace'
 import { DetailedPlanPage } from './features/diary/DetailedPlanPage'
 import { HomePage } from './features/home/HomePage'
 import { QuickPage } from './features/quick/QuickPage'
+import { useTour } from './features/tour/TourContext'
+import { TourOverlay } from './features/tour/TourOverlay'
+import { TourWelcomeDialog } from './features/tour/TourWelcomeDialog'
 
 interface PendingPlanCreation {
   name: string
@@ -34,6 +37,7 @@ function initialPage(
 }
 
 export function App() {
+  const tour = useTour()
   const {
     prefMode,
     setPreferredMode,
@@ -54,6 +58,8 @@ export function App() {
   )
   const [pendingPlanCreation, setPendingPlanCreation] =
     useState<PendingPlanCreation | null>(null)
+  const activePlan =
+    activeUser.plans.find((plan) => plan.status === 'active') ?? null
 
   const chooseMode = (mode: WorkMode) => {
     if (mode === 'diary' && selectedPlan?.status !== 'active') {
@@ -62,12 +68,16 @@ export function App() {
         selectPlan(fallback.id)
       } else {
         setPlanDialogOpen(true)
+        if (tour.step?.id === 'mode-switch') tour.goTo('plan-create')
         return
       }
     }
     setPreferredMode(mode)
     setPage(mode)
     window.history.replaceState(null, '', `#${mode}`)
+    if (mode === 'diary' && tour.step?.id === 'mode-switch') {
+      tour.goTo('diary-editor')
+    }
   }
 
   const applyImportedMode = (mode: WorkMode | null) => {
@@ -91,6 +101,7 @@ export function App() {
     setPlanDialogOpen(false)
     setPage('diary')
     window.history.replaceState(null, '', '#diary')
+    if (tour.step?.id === 'plan-create') tour.goTo('diary-editor')
     return true
   }
 
@@ -107,8 +118,6 @@ export function App() {
     [diary, profile],
   )
 
-  const activePlan =
-    activeUser.plans.find((plan) => plan.status === 'active') ?? null
   const quickNoticePlan =
     activeUser.plans.find(
       (plan) => plan.id === quickNoticePlanId && plan.status === 'active',
@@ -123,6 +132,7 @@ export function App() {
         onImported={applyImportedMode}
         onOpenPlan={openPlan}
         onStartPlan={() => setPlanDialogOpen(true)}
+        onRestartTour={tour.restart}
         onUserSelected={() => {
           setPage('quick')
           window.history.replaceState(null, '', '#quick')
@@ -134,6 +144,7 @@ export function App() {
         <QuickPage
           onDraftChanged={(profile) => {
             if (
+              tour.phase !== 'active' &&
               activePlan?.profile &&
               !profilesHaveSameSettings(activePlan.profile, profile)
             ) {
@@ -197,6 +208,15 @@ export function App() {
           }
         }}
       />
+      <TourWelcomeDialog
+        open={tour.phase === 'welcome'}
+        onStart={() => {
+          chooseMode('quick')
+          tour.start({ hasActivePlan: activePlan !== null })
+        }}
+        onSkip={tour.skip}
+      />
+      <TourOverlay />
     </div>
   )
 }

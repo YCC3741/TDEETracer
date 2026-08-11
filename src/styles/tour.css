@@ -1,0 +1,210 @@
+.tour-welcome-backdrop {
+  position: fixed;
+  z-index: 600;
+  inset: 0;
+  background: rgba(2, 8, 18, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+.tour-welcome-viewport {
+  position: fixed;
+  z-index: 610;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.tour-welcome-popup {
+  width: min(100%, 520px);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  outline: none;
+  background: linear-gradient(
+    145deg,
+    rgba(17, 37, 57, 0.98),
+    rgba(5, 15, 27, 0.98)
+  );
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.58);
+  padding: 30px;
+}
+
+.tour-welcome-popup h2 {
+  margin: 20px 0 28px;
+  font-family: Georgia, 'Times New Roman', 'Noto Serif TC', serif;
+  font-size: clamp(1.8rem, 5vw, 2.7rem);
+  line-height: 1.1;
+  text-align: center;
+}
+
+.tour-welcome-popup > .eyebrow {
+  display: block;
+  text-align: center;
+}
+
+.tour-welcome-a11y-description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tour-welcome-actions,
+.tour-coachmark-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.tour-welcome-actions {
+  justify-content: center;
+  gap: 20px;
+}
+
+.tour-shade,
+.tour-missing-backdrop {
+  position: fixed;
+  z-index: 320;
+  background: rgba(2, 8, 18, 0.76);
+  backdrop-filter: blur(2px);
+}
+
+.tour-missing-backdrop {
+  inset: 0;
+}
+
+.tour-spotlight {
+  position: fixed;
+  z-index: 321;
+  pointer-events: none;
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 4px rgba(255, 210, 138, 0.16),
+    0 14px 44px rgba(0, 0, 0, 0.36);
+}
+
+.tour-coachmark {
+  position: fixed;
+  z-index: 330;
+  width: min(360px, calc(100vw - 24px));
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  outline: none;
+  background: rgba(8, 20, 34, 0.98);
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.52);
+  padding: 20px;
+}
+
+.tour-coachmark.in-modal {
+  z-index: 610;
+}
+
+.tour-coachmark::before {
+  position: absolute;
+  left: calc(50% - 8px);
+  width: 14px;
+  height: 14px;
+  content: '';
+  transform: rotate(45deg);
+  border: 1px solid var(--line-strong);
+  background: #0a1929;
+}
+
+.tour-coachmark.placement-bottom::before {
+  top: -8px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.tour-coachmark.placement-top::before {
+  bottom: -8px;
+  border-top: 0;
+  border-left: 0;
+}
+
+.tour-coachmark-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--gold);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+.tour-coachmark-meta button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tour-coachmark h2 {
+  margin: 10px 0 8px;
+  font-family: Georgia, 'Times New Roman', 'Noto Serif TC', serif;
+  font-size: 1.35rem;
+}
+
+.tour-coachmark p {
+  margin: 0 0 18px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.tour-coachmark .tour-anchor-status {
+  margin-top: -8px;
+  color: var(--gold);
+  font-size: 0.82rem;
+}
+
+.tour-coachmark-actions {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tour-coachmark-actions button {
+  min-height: 42px;
+}
+
+.tour-coachmark-actions .secondary-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 600px) {
+  .tour-coachmark {
+    top: auto !important;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    left: 12px !important;
+    width: auto;
+  }
+
+  .tour-coachmark::before {
+    display: none;
+  }
+
+  .tour-welcome-popup {
+    padding: 24px 20px;
+  }
+
+  .tour-welcome-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .tour-welcome-actions button {
+    width: 100%;
+    min-height: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-coachmark,
+  .tour-spotlight {
+    transition: none;
+  }
+}

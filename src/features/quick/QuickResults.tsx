@@ -38,7 +38,7 @@ export function QuickResults({
   const endDate = addDays(startDate, simulation.days)
 
   return (
-    <div className="results">
+    <div className="results" data-tour-anchor="quick-results">
       <ProjectionPanel
         profile={anchoredProfile}
         simulation={simulation}
