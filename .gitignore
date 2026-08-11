@@ -1,0 +1,34 @@
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+vite.config.*.timestamp-*
+
+# Local logs and caches
+*.log
+.eslintcache
+.cache/
+.temp/
+.tmp/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# User exports and local data snapshots
+tdee-data-*.json
+*.local.json
+
+# Editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Internal development history
+Todo.md

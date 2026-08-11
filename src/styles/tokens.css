@@ -1,0 +1,24 @@
+:root {
+  --ink: #f7f6ef;
+  --muted: #bcc8d2;
+  --dim: #8494a2;
+  --night: #07111f;
+  --night-deep: #030914;
+  --panel: rgba(8, 20, 34, 0.9);
+  --panel-solid: #0b1a2b;
+  --panel-light: rgba(17, 37, 57, 0.9);
+  --line: rgba(220, 235, 245, 0.16);
+  --line-strong: rgba(255, 210, 138, 0.4);
+  --gold: #ffd28a;
+  --orange: #ff9b5f;
+  --red: #ff776d;
+  --green: #83d9ad;
+  --blue: #86c8f2;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+  --scrollbar-track: rgba(3, 9, 20, 0.5);
+  --scrollbar-thumb: rgba(132, 148, 162, 0.58);
+  --scrollbar-thumb-hover: rgba(255, 210, 138, 0.78);
+  --radius: 22px;
+  --radius-small: 13px;
+  --content-width: 1160px;
+}
