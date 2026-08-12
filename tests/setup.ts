@@ -51,5 +51,7 @@ afterEach(() => {
   cleanup()
   window.localStorage.clear()
   window.history.replaceState(null, '', '/')
+  delete document.documentElement.dataset.theme
+  document.documentElement.style.removeProperty('color-scheme')
   vi.useRealTimers()
 })

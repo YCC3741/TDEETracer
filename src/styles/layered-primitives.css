@@ -1,0 +1,370 @@
+:where(:root[data-page='quick'], :root[data-page='diary']) .app-shell {
+  background:
+    linear-gradient(var(--layered-stage-scrim), var(--layered-stage-scrim)),
+    var(--layered-art) center 48% / cover fixed;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .page-content.layered-page,
+:root[data-page='diary'] .page-content.diary-page {
+  position: relative;
+  width: min(
+    var(--layered-stage-max-width),
+    calc(100% - (var(--layered-stage-padding) * 2))
+  );
+  min-height: calc(100svh - var(--header-height));
+  padding-top: clamp(28px, 4.5vw, 58px);
+  color: var(--layered-panel-text);
+}
+
+.layered-page-heading {
+  display: grid;
+  width: fit-content;
+  margin: 0 0 28px;
+  gap: 5px;
+  color: #fff;
+  text-shadow: 0 2px 7px rgba(4, 12, 16, 0.42);
+}
+
+.layered-page-heading > span {
+  font-family: var(--font-compact);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.layered-page-heading h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.layered-page-heading::after {
+  width: 100%;
+  height: 3px;
+  margin-top: 3px;
+  content: '';
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.92) 0 72%,
+    transparent 72% 75%,
+    var(--layered-nav-active-surface) 75%
+  );
+}
+
+.layered-window {
+  position: relative;
+  border: 1px solid var(--layered-panel-border);
+  color: var(--layered-panel-text);
+  background:
+    linear-gradient(105deg, var(--layered-panel-highlight), transparent 34%),
+    var(--layered-panel-surface);
+  box-shadow:
+    var(--layered-panel-shadow),
+    inset 0 1px 0 var(--layered-panel-highlight);
+  backdrop-filter: blur(14px);
+}
+
+.layered-window-label {
+  display: block;
+  color: var(--layered-nav-active-deep);
+  font-family: var(--font-compact);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.layered-circle-node {
+  position: relative;
+  display: grid;
+  width: var(--layered-circle-node-size);
+  height: var(--layered-circle-node-size);
+  border-radius: 50%;
+  flex: none;
+  place-items: center;
+  color: var(--layered-nav-idle-text);
+  filter: drop-shadow(0 5px 7px rgba(4, 12, 16, 0.3));
+  --layered-circle-node-size: 64px;
+  --layered-circle-body-size: 52px;
+  --layered-circle-ring: rgba(255, 255, 255, 0.82);
+  --layered-circle-body-start: var(--layered-nav-idle-surface);
+  --layered-circle-body-end: var(--layered-circle-neutral-end);
+}
+
+.layered-circle-node::before {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--layered-circle-ring);
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+
+.layered-circle-node-body {
+  position: relative;
+  display: grid;
+  width: var(--layered-circle-body-size);
+  height: var(--layered-circle-body-size);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  place-items: center;
+  color: inherit;
+  background: linear-gradient(
+    145deg,
+    var(--layered-circle-body-start),
+    var(--layered-circle-body-end)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.layered-circle-node[data-size='small'] {
+  --layered-circle-node-size: 44px;
+  --layered-circle-body-size: 34px;
+}
+
+.layered-circle-node[data-size='large'] {
+  --layered-circle-node-size: 72px;
+  --layered-circle-body-size: 60px;
+}
+
+.layered-circle-node[data-tone='active'] {
+  color: #fff;
+  --layered-circle-ring: var(--layered-nav-active-light);
+  --layered-circle-body-start: var(--layered-nav-active-light);
+  --layered-circle-body-end: var(--layered-nav-active-deep);
+}
+
+.layered-circle-node[data-tone='active'] .layered-circle-node-body {
+  background: var(--layered-nav-active-fill);
+}
+
+.layered-circle-node[data-tone='complete'] {
+  color: #fff;
+  --layered-circle-ring: var(--layered-status-fill-light);
+  --layered-circle-body-start: var(--layered-status-fill-light);
+  --layered-circle-body-end: var(--layered-complete);
+}
+
+.layered-status {
+  display: grid;
+  min-width: 360px;
+  color: var(--layered-status-text);
+  filter: drop-shadow(var(--layered-status-shadow));
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.layered-status-node {
+  position: relative;
+  z-index: 1;
+  width: 26px;
+  --layered-status-node-fill: var(--layered-status-node-neutral-fill);
+  --layered-status-node-ring: var(--layered-status-node-neutral-ring);
+  pointer-events: none;
+}
+
+.layered-status-node::before {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 11px;
+  height: 1px;
+  content: '';
+  background: var(--layered-status-connector);
+}
+
+.layered-status-node::after {
+  position: absolute;
+  top: calc(50% - 6px);
+  left: 1px;
+  z-index: 2;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--layered-status-node-ring);
+  content: '';
+  background: var(--layered-status-node-shell);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.36);
+  transform: rotate(45deg);
+}
+
+.layered-status-node-body {
+  position: absolute;
+  top: calc(50% - 3px);
+  left: 4px;
+  z-index: 3;
+  width: 6px;
+  height: 6px;
+  background: var(--layered-status-node-fill);
+  transform: rotate(45deg);
+}
+
+.layered-status-node[data-state='active'] {
+  --layered-status-node-fill: var(--layered-status-fill-light);
+  --layered-status-node-ring: var(--layered-status-fill-light);
+}
+
+.layered-status-node[data-state='complete'] {
+  --layered-status-node-fill: var(--layered-nav-active-surface);
+  --layered-status-node-ring: var(--layered-nav-active-surface);
+}
+
+.layered-status-mark {
+  height: 52px;
+  align-self: end;
+}
+
+.layered-status-main {
+  display: grid;
+  min-height: 52px;
+  padding: 8px 11px;
+  border: 2px solid var(--layered-status-border);
+  background: var(--layered-status-surface);
+  gap: 5px;
+}
+
+.layered-status-main > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.layered-status-main strong,
+.layered-status-main small,
+.layered-status-detail {
+  font-family: var(--font-compact);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.layered-status-main progress {
+  width: 100%;
+  height: 12px;
+  border: 1px solid var(--layered-status-meter-border);
+  border-radius: 0;
+  overflow: hidden;
+  appearance: none;
+  background: var(--layered-status-track);
+}
+
+.layered-status-main progress::-webkit-progress-bar {
+  background: var(--layered-status-track);
+}
+
+.layered-status-main progress::-webkit-progress-value {
+  background: linear-gradient(
+    90deg,
+    var(--layered-status-fill),
+    var(--layered-status-fill-light)
+  );
+}
+
+.layered-status-main progress::-moz-progress-bar {
+  background: var(--layered-status-fill);
+}
+
+.layered-status-detail {
+  display: grid;
+  min-width: 74px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 2px solid var(--layered-status-border);
+  place-items: center;
+  background: linear-gradient(
+    var(--layered-status-detail-start),
+    var(--layered-status-detail-end)
+  );
+  white-space: nowrap;
+}
+
+.floating-route-hud {
+  position: fixed;
+  top: 120px;
+  right: 22px;
+  z-index: 80;
+  pointer-events: none;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  :is(button, input, select, textarea):focus-visible {
+  outline-color: var(--layered-focus-ring);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .layered-window {
+    background: var(--layered-panel-surface-strong);
+  }
+}
+
+@media (max-width: 1040px) {
+  .floating-route-hud {
+    top: auto;
+    bottom: 22px;
+  }
+}
+
+@media (max-width: 700px) {
+  .floating-route-hud {
+    position: static;
+    inset: auto;
+  }
+
+  :where(:root[data-page='quick'], :root[data-page='diary'])
+    .page-content.layered-page,
+  :root[data-page='diary'] .page-content.diary-page {
+    width: min(100% - 24px, var(--layered-stage-max-width));
+    padding-top: 24px;
+  }
+
+  .layered-page-heading {
+    margin-bottom: 20px;
+  }
+
+  .layered-status {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (forced-colors: active), (prefers-contrast: more) {
+  :where(:root[data-page='quick'], :root[data-page='diary']) .app-shell {
+    background: Canvas;
+  }
+
+  .layered-window,
+  .layered-status-main,
+  .layered-status-detail {
+    border: 2px solid CanvasText;
+    color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .layered-circle-node {
+    color: CanvasText;
+    filter: none;
+  }
+
+  .layered-circle-node::before,
+  .layered-circle-node-body {
+    border: 2px solid CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+
+  .layered-status-node::after {
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+
+  .layered-status-node-body {
+    background: CanvasText;
+  }
+}

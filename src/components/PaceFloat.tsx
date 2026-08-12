@@ -1,8 +1,22 @@
+import type { ReactNode } from 'react'
 import type { PaceComparison } from '../domain/types'
+import { LayeredStatusNode } from './layered/LayeredStatusNode'
 
 interface PaceFloatProps {
   pace: PaceComparison | null
   hasPlan: boolean
+}
+
+function PaceHud({ children }: { children: ReactNode }) {
+  return (
+    <aside className="pace-float layered-pace-hud floating-route-hud">
+      <LayeredStatusNode className="pace-hud-mark" state="active" />
+      <div className="pace-hud-copy">{children}</div>
+      <span className="pace-hud-meter" aria-hidden="true">
+        <i />
+      </span>
+    </aside>
+  )
 }
 
 function weightLabel(value: number): {
@@ -36,21 +50,21 @@ function daysLabel(value: number): {
 export function PaceFloat({ pace, hasPlan }: PaceFloatProps) {
   if (!hasPlan) {
     return (
-      <aside className="pace-float">
+      <PaceHud>
         <span>目前進度</span>
         <strong>尚無計畫</strong>
         <small>請先在快速計算儲存資料</small>
-      </aside>
+      </PaceHud>
     )
   }
 
   if (!pace || pace.empty) {
     return (
-      <aside className="pace-float">
+      <PaceHud>
         <span>目前進度</span>
         <strong>等待日記紀錄</strong>
         <small>加入飲食或運動後顯示</small>
-      </aside>
+      </PaceHud>
     )
   }
 
@@ -61,11 +75,11 @@ export function PaceFloat({ pace, hasPlan }: PaceFloatProps) {
       : daysLabel(pace.daysDelta)
 
   return (
-    <aside className="pace-float">
+    <PaceHud>
       <span>{pace.source === 'weight' ? '實際體重進度' : '相對計畫進度'}</span>
       <strong className={weight.tone}>{weight.text}</strong>
       {days ? <strong className={days.tone}>{days.text}</strong> : null}
       {pace.daysNote ? <small>{pace.daysNote}</small> : null}
-    </aside>
+    </PaceHud>
   )
 }

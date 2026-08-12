@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { NotificationStack } from '../../../src/components/NotificationStack'
@@ -70,38 +70,231 @@ describe('DiaryPage date and entry interactions', () => {
     vi.setSystemTime(new Date('2026-08-11T08:30:00'))
   })
 
-  it('uses a stable dashboard row and switches calendar and achievements in one frame', async () => {
+  it('uses a seven-day rail and opens the complete marked month on demand', async () => {
+    const user = userEvent.setup()
+    const { container } = renderDiary()
+
+    const rail = screen.getByRole('region', { name: '七日日期導覽' })
+    expect(
+      within(rail).getAllByRole('button', { name: /選擇 2026\/08\// }),
+    ).toHaveLength(7)
+    expect(
+      within(rail).getByRole('button', { name: /選擇 2026\/08\/11/ }),
+    ).toHaveAttribute('aria-current', 'date')
+    expect(
+      within(rail)
+        .getByRole('button', { name: /選擇 2026\/08\/11/ })
+        .querySelector('.date-today-marker'),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: '2026 年 8 月' }),
+    ).not.toBeInTheDocument()
+
+    await user.click(within(rail).getByRole('button', { name: '開啟完整月曆' }))
+    const calendar = screen.getByRole('dialog', { name: '完整月曆' })
+    expect(
+      within(calendar).getByRole('heading', { name: '2026 年 8 月' }),
+    ).toBeInTheDocument()
+    expect(
+      within(calendar).getByRole('button', { name: '2026/08/03，有簽到紀錄' }),
+    ).toHaveClass('checked')
+    expect(
+      within(calendar)
+        .getByRole('button', { name: '2026/08/11' })
+        .querySelector('.date-today-marker'),
+    ).toBeInTheDocument()
+
+    await user.click(
+      within(calendar).getByRole('button', { name: '2026/08/05' }),
+    )
+    expect(calendar).not.toBeInTheDocument()
+    expect(
+      within(rail).getByRole('button', { name: /選擇 2026\/08\/05/ }),
+    ).toHaveAttribute('aria-current', 'date')
+    expect(container.querySelector('.diary-date-rail')).toBeInTheDocument()
+  })
+
+  it('keeps five editor destinations visible and opens their content', async () => {
     const user = userEvent.setup()
     const { container } = renderDiary()
     const dashboard = container.querySelector<HTMLElement>('.diary-dashboard')
-    const overview = container.querySelector<HTMLElement>(
-      '.diary-overview-card',
-    )
-    const editor = container.querySelector<HTMLElement>('.diary-editor')
+    let editor = container.querySelector<HTMLElement>('.diary-editor')
 
-    expect(dashboard).toContainElement(overview)
     expect(dashboard).toContainElement(editor)
-    expect(overview).toContainElement(
-      screen.getByRole('heading', { name: '2026 年 8 月' }),
+    expect(
+      container.querySelector('.diary-overview-card'),
+    ).not.toBeInTheDocument()
+    if (!dashboard || !editor) throw new Error('Missing diary editor layout')
+    const editorLayout = dashboard.querySelector<HTMLElement>(
+      '.diary-editor-layout',
     )
-    const calendarGrids = overview?.querySelectorAll('.calendar-grid')
-    expect(calendarGrids?.[1]?.children).toHaveLength(42)
-    expect(editor).toContainElement(
-      screen.getByRole('heading', { name: '新增今日紀錄' }),
+    const editorStage = dashboard.querySelector<HTMLElement>(
+      '.diary-editor-stage',
     )
-    if (!editor) throw new Error('Missing diary editor card')
-    const addTab = within(editor).getByRole('tab', { name: '新增紀錄' })
-    const entriesTab = within(editor).getByRole('tab', {
-      name: '當日紀錄 0',
+    const initialEditorBody =
+      editor.querySelector<HTMLElement>('.diary-editor-body')
+    const entriesDestination = within(dashboard).getByRole('button', {
+      name: '查看當日紀錄，共 0 筆',
     })
-    expect(addTab).toHaveAttribute('aria-selected', 'true')
-    expect(within(editor).getByLabelText('熱量（kcal）')).toBeInTheDocument()
+    const foodCategory = within(dashboard).getByRole('button', {
+      name: '新增飲食',
+    })
+    const exerciseCategory = within(dashboard).getByRole('button', {
+      name: '新增運動',
+    })
+    const weightCategory = within(dashboard).getByRole('button', {
+      name: '記錄體重',
+    })
+    expect(foodCategory).toHaveAttribute('aria-pressed', 'false')
+    const achievementCategory = within(dashboard).getByRole('button', {
+      name: '查看成就',
+    })
+    expect(achievementCategory).toHaveAttribute('aria-pressed', 'false')
+    const categoryRail = dashboard.querySelector<HTMLElement>(
+      '.layered-category-rail',
+    )
+    expect(editorLayout).toHaveAttribute('data-rail-expanded', 'false')
+    expect(editorStage).toHaveAttribute('data-open', 'false')
+    expect(categoryRail).toHaveAttribute('data-expanded', 'false')
+    expect(editor).toHaveAttribute('aria-hidden', 'true')
+    expect(editor).toHaveAttribute('inert')
+    expect(categoryRail?.children).toHaveLength(5)
+    expect(
+      within(categoryRail!)
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label')),
+    ).toEqual([
+      '新增飲食',
+      '新增運動',
+      '記錄體重',
+      '查看當日紀錄，共 0 筆',
+      '查看成就',
+    ])
+    expect(
+      screen.queryByRole('heading', { name: '新增今日紀錄' }),
+    ).not.toBeInTheDocument()
+    const dateRailSummary = container.querySelector('.date-rail-summary')
+    expect(dateRailSummary).toHaveTextContent('飲食攝取+0 kcal')
+    expect(dateRailSummary).toHaveTextContent('運動消耗−0 kcal')
+    expect(dateRailSummary?.parentElement).toHaveClass('date-rail-copy')
+    const weeklyProgress = screen.getByRole('progressbar', {
+      name: '本週簽到進度',
+    })
+    expect(weeklyProgress).toHaveAttribute('max', '7')
+    expect(weeklyProgress.closest('aside')).toHaveClass(
+      'weekly-progress-hud',
+      'floating-route-hud',
+    )
 
-    await user.click(entriesTab)
-    expect(entriesTab).toHaveAttribute('aria-selected', 'true')
+    await user.click(achievementCategory)
+    editor = dashboard.querySelector<HTMLElement>('.diary-editor')
+    if (!editor) throw new Error('Missing achievement editor')
+    expect(editorLayout).toHaveAttribute('data-rail-expanded', 'true')
+    expect(editorStage).toHaveAttribute('data-open', 'true')
+    expect(categoryRail).toHaveAttribute('data-expanded', 'true')
+    expect(achievementCategory).toHaveAttribute('aria-pressed', 'true')
+    expect(editor).toHaveAttribute('data-animated-panel', 'true')
+    expect(editor.querySelector('.diary-editor-body')).not.toBe(
+      initialEditorBody,
+    )
+    expect(
+      within(editor).getByRole('heading', { name: '旅程成就' }),
+    ).toBeInTheDocument()
+    expect(within(editor).queryByLabelText('日期')).not.toBeInTheDocument()
+    expect(editor.querySelector('.day-summary')).not.toBeInTheDocument()
+    const achievementPanel = editor.querySelector<HTMLElement>(
+      '.entry-achievement-panel',
+    )
+    expect(
+      within(editor).getByText('Achievements / Journey'),
+    ).toBeInTheDocument()
+    expect(
+      within(editor).queryByRole('heading', { name: 'Journey Milestones' }),
+    ).not.toBeInTheDocument()
+    expect(within(editor).queryByText('跨計畫累積')).not.toBeInTheDocument()
+    expect(
+      within(editor).queryByText(
+        '統計目前使用者的所有正式計畫；已封存計畫與永久解鎖里程碑都會保留。',
+      ),
+    ).not.toBeInTheDocument()
+    expect(editor.querySelector('.entry-active-ribbon')).not.toBeInTheDocument()
+    expect(within(achievementPanel!).getByText('初來乍到')).toBeInTheDocument()
+    expect(achievementPanel).toHaveTextContent('累積紀錄1 日')
+    expect(achievementPanel).toHaveTextContent('最長連續1 日')
+    expect(
+      achievementPanel?.querySelector('.achievement-node > i'),
+    ).toBeInTheDocument()
+    expect(achievementPanel?.closest('.entry-form-window')).not.toBeNull()
+    await user.click(achievementCategory)
+    editor = dashboard.querySelector<HTMLElement>('.diary-editor')
+    if (!editor) throw new Error('Missing collapsed editor')
+    expect(editorLayout).toHaveAttribute('data-rail-expanded', 'false')
+    expect(editorStage).toHaveAttribute('data-open', 'false')
+    expect(categoryRail).toHaveAttribute('data-expanded', 'false')
+    expect(achievementCategory).toHaveAttribute('aria-pressed', 'false')
+    expect(editor).toHaveAttribute('aria-hidden', 'true')
+    await user.click(foodCategory)
+    editor = dashboard.querySelector<HTMLElement>('.diary-editor')
+    if (!editor) throw new Error('Missing direct-entry editor')
+    expect(editorLayout).toHaveAttribute('data-rail-expanded', 'true')
+    expect(editorLayout).toHaveAttribute('data-entry-layout', 'direct')
+    expect(
+      dashboard.querySelector('.diary-entry-route-ribbon.food'),
+    ).toBeInTheDocument()
+    expect(
+      within(editor).getByRole('heading', { name: '新增飲食' }),
+    ).toBeInTheDocument()
+    expect(within(editor).queryByLabelText('日期')).not.toBeInTheDocument()
+    expect(editor.querySelector('.day-summary')).not.toBeInTheDocument()
+
+    const foodEditor = editor
+    await user.click(exerciseCategory)
+    editor = dashboard.querySelector<HTMLElement>('.diary-editor')
+    if (!editor) throw new Error('Missing exercise editor')
+    expect(editor).not.toBe(foodEditor)
+    expect(
+      dashboard.querySelector('.diary-entry-route-ribbon.exercise'),
+    ).toBeInTheDocument()
+    expect(
+      within(editor).getByRole('heading', { name: '新增運動' }),
+    ).toBeInTheDocument()
+
+    const exerciseEditor = editor
+    await user.click(weightCategory)
+    editor = dashboard.querySelector<HTMLElement>('.diary-editor')
+    if (!editor) throw new Error('Missing weight editor')
+    expect(editor).not.toBe(exerciseEditor)
+    expect(
+      dashboard.querySelector('.diary-entry-route-ribbon.weight'),
+    ).toBeInTheDocument()
+    expect(
+      within(editor).getByRole('heading', { name: '記錄體重' }),
+    ).toBeInTheDocument()
+
+    await user.click(foodCategory)
+    editor = dashboard.querySelector<HTMLElement>('.diary-editor')
+    if (!editor) throw new Error('Missing restored food editor')
+
+    await user.click(entriesDestination)
+    editor = dashboard.querySelector<HTMLElement>('.diary-editor')
+    if (!editor) throw new Error('Missing entries editor')
+    expect(editorLayout).toHaveAttribute('data-rail-expanded', 'true')
+    expect(editorLayout).toHaveAttribute('data-entry-layout', 'standard')
+    expect(editor).toHaveAttribute('data-animated-panel', 'true')
+    expect(
+      dashboard.querySelector('.diary-entry-route-ribbon'),
+    ).not.toBeInTheDocument()
+    expect(entriesDestination).toHaveAttribute('aria-pressed', 'true')
+    expect(foodCategory).toHaveAttribute('aria-pressed', 'false')
+    expect(categoryRail?.children).toHaveLength(5)
     expect(
       within(editor).getByRole('heading', { name: '當日紀錄' }),
     ).toBeInTheDocument()
+    expect(within(editor).getByText('Records / Daily Log')).toBeInTheDocument()
+    expect(editor.querySelector('.section-head')).toHaveAttribute(
+      'data-compact',
+      'true',
+    )
     expect(
       within(editor).getByText('這一天還沒有任何紀錄。'),
     ).toBeInTheDocument()
@@ -110,23 +303,56 @@ describe('DiaryPage date and entry interactions', () => {
     ).not.toBeInTheDocument()
     expect(within(editor).queryByLabelText('日期')).not.toBeInTheDocument()
     expect(editor.querySelector('.day-summary')).not.toBeInTheDocument()
-    const entriesPanel = within(editor).getByRole('tabpanel')
+    const entriesPanel = editor.querySelector<HTMLElement>(
+      '.editor-entries-panel',
+    )
     expect(entriesPanel).toHaveClass('editor-entries-panel')
-    expect(entriesPanel.querySelector('.entry-list')).toBeInTheDocument()
-    expect(entriesPanel.querySelector('.button-row')).toBeInTheDocument()
+    expect(entriesPanel?.querySelector('.entry-list')).toBeInTheDocument()
+    expect(entriesPanel?.querySelector('.button-row')).toBeInTheDocument()
 
-    await user.keyboard('{ArrowLeft}')
-    expect(addTab).toHaveAttribute('aria-selected', 'true')
-    expect(addTab).toHaveFocus()
+    await user.click(entriesDestination)
+    expect(editorLayout).toHaveAttribute('data-rail-expanded', 'false')
+    expect(categoryRail).toHaveAttribute('data-expanded', 'false')
+    await user.click(foodCategory)
+    editor = dashboard.querySelector<HTMLElement>('.diary-editor')
+    if (!editor) throw new Error('Missing reopened direct-entry editor')
+    expect(editorLayout).toHaveAttribute('data-rail-expanded', 'true')
+    expect(foodCategory).toHaveAttribute('aria-pressed', 'true')
+    expect(
+      within(editor).getByRole('heading', { name: '新增飲食' }),
+    ).toBeInTheDocument()
 
-    if (!overview) throw new Error('Missing diary overview card')
-    await user.click(within(overview).getByRole('tab', { name: '簽到成就' }))
-
-    expect(within(overview).getByText('初來乍到')).toBeInTheDocument()
-    expect(overview).not.toHaveTextContent('個紀錄日')
     expect(
       screen.queryByRole('heading', { name: '2026 年 8 月' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('keeps actions outside a scrollable list when records exceed five', async () => {
+    const user = userEvent.setup()
+    const day = makeDiaryDay('2026-08-11', {
+      entries: Array.from({ length: 6 }, (_, index) => ({
+        id: `food-${index}`,
+        type: 'food' as const,
+        time: '12:00',
+        label: '飲食',
+        kcal: 100 + index,
+      })),
+    })
+    const { container } = renderDiary(makeDiaryStorage([day]))
+
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 6 筆' }),
+    )
+
+    const entryList = container.querySelector<HTMLElement>('.entry-list')
+    const deleteDayButton = screen.getByRole('button', {
+      name: '刪除此日全部',
+    })
+    expect(entryList).toHaveAttribute('data-scrollable', 'true')
+    expect(entryList).toHaveAttribute('tabindex', '0')
+    expect(entryList).toHaveAccessibleName('當日紀錄列表，共 6 筆')
+    expect(entryList?.querySelectorAll('.entry-row.food')).toHaveLength(6)
+    expect(entryList).not.toContainElement(deleteDayButton)
   })
 
   it('adds, overwrites and removes one actual weight without a check-in', async () => {
@@ -147,7 +373,7 @@ describe('DiaryPage date and entry interactions', () => {
       },
     ])
     expect(storedAchievements(storage)).toEqual([])
-    expect(container.querySelector('.calendar-day.today')).not.toHaveClass(
+    expect(container.querySelector('.date-rail-days .today')).not.toHaveClass(
       'checked',
     )
 
@@ -157,7 +383,9 @@ describe('DiaryPage date and entry interactions', () => {
     await user.click(screen.getByRole('button', { name: '更新體重紀錄' }))
     expect(storedDiary(storage)[0].actualWeightKg).toBe(72.1)
 
-    await user.click(screen.getByRole('tab', { name: '當日紀錄 1' }))
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 1 筆' }),
+    )
     expect(screen.getByText('72.1 kg')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '刪除此體重紀錄' }))
     expect(storedDiary(storage)).toEqual([])
@@ -189,7 +417,9 @@ describe('DiaryPage date and entry interactions', () => {
     })
     const storage = makeDiaryStorage([day])
     renderDiary(storage)
-    await user.click(screen.getByRole('tab', { name: '當日紀錄 3' }))
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 3 筆' }),
+    )
 
     await user.click(screen.getByRole('button', { name: '編輯飲食紀錄 11:08' }))
     let dialog = screen.getByRole('dialog', { name: '編輯飲食紀錄' })
@@ -257,7 +487,9 @@ describe('DiaryPage date and entry interactions', () => {
     })
     const storage = makeDiaryStorage([day])
     renderDiary(storage)
-    await user.click(screen.getByRole('tab', { name: '當日紀錄 1' }))
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 1 筆' }),
+    )
     const editButton = screen.getByRole('button', {
       name: '編輯飲食紀錄 12:00',
     })
@@ -292,13 +524,10 @@ describe('DiaryPage date and entry interactions', () => {
   })
 
   it('does not expose editing or deletion in read-only plans', async () => {
-    const user = userEvent.setup()
     const storage = makeDiaryStorage([
       makeDiaryDay('2026-08-11', { actualWeightKg: 72.8 }),
     ])
     renderWithAppData(<DiaryPage readOnly />, { storage })
-
-    await user.click(screen.getByRole('tab', { name: '當日紀錄 2' }))
 
     expect(screen.getByText('72.8 kg')).toBeInTheDocument()
     expect(
@@ -317,7 +546,7 @@ describe('DiaryPage date and entry interactions', () => {
     const storage = makeDiaryStorage([])
     renderDiary(storage)
 
-    await user.click(screen.getByRole('button', { name: '12' }))
+    await user.click(screen.getByRole('button', { name: '選擇 2026/08/12' }))
     await user.click(screen.getByRole('button', { name: '記錄體重' }))
     await user.type(screen.getByLabelText('實際體重（kg）'), '72')
     await user.click(screen.getByRole('button', { name: '＋ 新增體重紀錄' }))
@@ -347,6 +576,12 @@ describe('DiaryPage date and entry interactions', () => {
     expect(
       within(projection).getByRole('heading', { name: '依明細動態更新' }),
     ).toBeInTheDocument()
+    expect(
+      within(projection).queryByText('有紀錄日：實際攝取＋運動'),
+    ).not.toBeInTheDocument()
+    expect(
+      within(projection).queryByText('預測如何使用日記資料？'),
+    ).not.toBeInTheDocument()
 
     await user.click(chartTab)
     expect(
@@ -357,53 +592,50 @@ describe('DiaryPage date and entry interactions', () => {
     expect(within(projection).getByRole('table')).toBeInTheDocument()
   })
 
-  it('hooks month controls, calendar days and return-today to the date input', async () => {
+  it('hooks month controls, calendar days and return-today to the date rail', async () => {
     const user = userEvent.setup()
-    const { container } = renderDiary()
-    const datePicker = screen.getByLabelText('日期')
+    renderDiary()
+    const rail = screen.getByRole('region', { name: '七日日期導覽' })
 
-    expect(datePicker).toHaveTextContent('2026/08/11')
     expect(
-      container.querySelector('input[type="date"]'),
-    ).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: '下個月' }))
+      within(rail).getByRole('button', { name: /選擇 2026\/08\/11/ }),
+    ).toHaveAttribute('aria-current', 'date')
+    await user.click(screen.getByRole('button', { name: '開啟完整月曆' }))
+    const calendar = screen.getByRole('dialog', { name: '完整月曆' })
+    await user.click(within(calendar).getByRole('button', { name: '下個月' }))
     expect(
-      screen.getByRole('heading', { name: '2026 年 9 月' }),
+      within(calendar).getByRole('heading', { name: '2026 年 9 月' }),
     ).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: '上個月' }))
-    await user.click(screen.getByRole('button', { name: '5' }))
-    expect(datePicker).toHaveTextContent('2026/08/05')
-
-    await user.click(datePicker)
-    const popup = await screen.findByRole('dialog', { name: '選擇日期' })
-    await user.click(within(popup).getByRole('button', { name: '下一個月' }))
-    await user.click(within(popup).getByRole('button', { name: '2026/09/02' }))
+    await user.click(within(calendar).getByRole('button', { name: '上個月' }))
+    await user.click(
+      within(calendar).getByRole('button', { name: '2026/08/05' }),
+    )
     expect(
-      screen.getByRole('heading', { name: '2026 年 9 月' }),
-    ).toBeInTheDocument()
+      within(rail).getByRole('button', { name: /選擇 2026\/08\/05/ }),
+    ).toHaveAttribute('aria-current', 'date')
 
-    await user.click(screen.getByRole('tab', { name: '當日紀錄 0' }))
+    await user.click(screen.getByRole('button', { name: '開啟完整月曆' }))
+    const nextCalendar = screen.getByRole('dialog', { name: '完整月曆' })
+    await user.click(
+      within(nextCalendar).getByRole('button', { name: '下個月' }),
+    )
+    await user.click(
+      within(nextCalendar).getByRole('button', { name: '2026/09/02' }),
+    )
+    expect(
+      within(rail).getByRole('button', { name: /選擇 2026\/09\/02/ }),
+    ).toHaveAttribute('aria-current', 'date')
+
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 0 筆' }),
+    )
     await user.click(screen.getByRole('button', { name: '回到今天' }))
-    await user.click(screen.getByRole('tab', { name: '新增紀錄' }))
-    expect(screen.getByLabelText('日期')).toHaveTextContent('2026/08/11')
+    expect(
+      within(rail).getByRole('button', { name: /選擇 2026\/08\/11/ }),
+    ).toHaveAttribute('aria-current', 'date')
   })
 
-  it('rejects an empty date instead of creating a disappearing diary day', async () => {
-    const user = userEvent.setup()
-    const storage = makeDiaryStorage([])
-    renderDiary(storage)
-
-    await user.click(screen.getByLabelText('日期'))
-    const popup = await screen.findByRole('dialog', { name: '選擇日期' })
-    await user.click(within(popup).getByRole('button', { name: '清除' }))
-    await user.type(screen.getByLabelText('熱量（kcal）'), '450')
-    await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
-
-    expect(storedDiary(storage)).toEqual([])
-    expect(screen.getByText('請選擇有效日期。')).toBeInTheDocument()
-  })
-
-  it('adds food by Enter, updates summary and storage, unlocks and closes an achievement', async () => {
+  it('adds food by Enter and announces achievements without blocking logging', async () => {
     const user = userEvent.setup()
     const storage = makeDiaryStorage([])
     const { container } = renderDiary(storage)
@@ -424,24 +656,30 @@ describe('DiaryPage date and entry interactions', () => {
       ],
     })
     expect(screen.getAllByText('+450 kcal')).toHaveLength(1)
-    expect(container.querySelector('.day-summary')?.children).toHaveLength(2)
+    expect(
+      container.querySelector('.date-rail-summary')?.children,
+    ).toHaveLength(2)
     expect(screen.queryByText('選擇日期')).not.toBeInTheDocument()
     expect(screen.queryByText('紀錄類型')).not.toBeInTheDocument()
-    const achievementDialog = screen.getByRole('dialog', {
-      name: '初來乍到',
+    expect(
+      screen.queryByRole('dialog', { name: '初來乍到' }),
+    ).not.toBeInTheDocument()
+    const achievementToast = screen.getByRole('button', {
+      name: /解鎖 Journey Milestone：初來乍到/,
     })
-    await waitFor(() =>
-      expect(
-        within(achievementDialog).getByRole('button', { name: '繼續' }),
-      ).toHaveFocus(),
+    expect(achievementToast).toHaveTextContent(
+      '解鎖 Journey Milestone：初來乍到',
     )
-
-    await user.keyboard('{Escape}')
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(calorieInput).toHaveFocus()
-    await user.click(screen.getByRole('tab', { name: '當日紀錄 1' }))
-    expect(screen.getAllByText('+450 kcal')).toHaveLength(1)
-    expect(container.querySelector('.day-summary')).not.toBeInTheDocument()
+    await user.click(achievementToast)
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 1 筆' }),
+    )
+    expect(screen.getAllByText('+450 kcal')).toHaveLength(2)
+    expect(container.querySelector('.date-rail-summary')).toBeInTheDocument()
+    expect(
+      container.querySelector('.diary-editor .day-summary'),
+    ).not.toBeInTheDocument()
   })
 
   it('uses short exercise names with MET details in themed tooltips', async () => {
@@ -460,7 +698,7 @@ describe('DiaryPage date and entry interactions', () => {
     ).not.toBeInTheDocument()
 
     const info = screen.getByLabelText('顯示說明 一般步行 · MET 3.5')
-    await user.hover(info)
+    info.focus()
     expect(await screen.findByRole('tooltip')).toHaveTextContent(
       '一般步行 · MET 3.5',
     )
@@ -476,21 +714,22 @@ describe('DiaryPage date and entry interactions', () => {
     storage.setItem(STORAGE_ACHIEVEMENTS, JSON.stringify([1, 2]))
     renderDiary(storage)
 
+    await user.click(screen.getByRole('button', { name: '新增飲食' }))
     await user.type(screen.getByLabelText('熱量（kcal）'), '450')
     await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
 
-    const dialog = screen.getByRole('dialog')
-    expect(dialog).toHaveTextContent('連續起步')
-    expect(dialog).toHaveTextContent('已連續 4 天留下明細紀錄。')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const streakToast = screen.getByRole('button', {
+      name: /解鎖 Journey Milestone：連續起步/,
+    })
+    expect(streakToast).toHaveTextContent('歷史最長連續 4 天')
     expect(storedAchievements(storage)).toEqual(
       expect.arrayContaining(['total:4', 'streak:4']),
     )
 
-    await user.click(within(dialog).getByRole('button', { name: '繼續' }))
-    await user.click(screen.getByRole('tab', { name: '簽到成就' }))
-
     expect(screen.queryByText('連續紀錄')).not.toBeInTheDocument()
     expect(screen.queryByText('最長 4 天')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '查看成就' }))
     expect(screen.getByText('連續起步').closest('.achievement')).toHaveClass(
       'unlocked',
     )
@@ -506,7 +745,6 @@ describe('DiaryPage date and entry interactions', () => {
     await chooseTime(user, '時間', '18', '45')
     expect(calorieInput).toHaveValue(131)
     await user.click(screen.getByRole('button', { name: '＋ 新增運動並計算' }))
-    await user.click(screen.getByRole('button', { name: '繼續' }))
 
     await user.clear(calorieInput)
     await user.type(calorieInput, '200')
@@ -548,11 +786,27 @@ describe('DiaryPage date and entry interactions', () => {
     expect(screen.getByLabelText('熱量（kcal）')).toBeInTheDocument()
   })
 
+  it('accepts arbitrary whole-number food calories', async () => {
+    const user = userEvent.setup()
+    const storage = makeDiaryStorage([])
+    renderDiary(storage)
+
+    await user.click(screen.getByRole('button', { name: '新增飲食' }))
+    await user.type(screen.getByLabelText('熱量（kcal）'), '555')
+    await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
+
+    expect(storedDiary(storage)[0].entries[0]).toMatchObject({
+      type: 'food',
+      kcal: 555,
+    })
+  })
+
   it('enforces entry input ranges before the add handler runs', async () => {
     const user = userEvent.setup()
     const storage = makeDiaryStorage([])
     renderDiary(storage)
 
+    await user.click(screen.getByRole('button', { name: '新增飲食' }))
     await user.type(screen.getByLabelText('熱量（kcal）'), '10001')
     await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
     expect(storedDiary(storage)).toEqual([])
@@ -587,7 +841,9 @@ describe('DiaryPage date and entry interactions', () => {
     const storage = makeDiaryStorage([day])
     renderDiary(storage)
 
-    await user.click(screen.getByRole('tab', { name: '當日紀錄 2' }))
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 2 筆' }),
+    )
     const removeButtons = screen.getAllByRole('button', { name: '刪除此明細' })
     await user.click(removeButtons[0]!)
     expect(storedDiary(storage)[0].entries).toHaveLength(1)
@@ -615,6 +871,7 @@ describe('DiaryPage date and entry interactions', () => {
     renderDiary(storage)
     storage.failWritesFor(STORAGE_WORKSPACE)
 
+    await user.click(screen.getByRole('button', { name: '新增飲食' }))
     await user.type(screen.getByLabelText('熱量（kcal）'), '450')
     await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
 

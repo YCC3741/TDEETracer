@@ -6,12 +6,17 @@ export type TourStepId =
   | 'quick-results'
   | 'mode-switch'
   | 'plan-create'
+  | 'diary-route'
   | 'diary-editor'
   | 'food-form'
   | 'exercise-tab'
   | 'exercise-form'
   | 'weight-tab'
   | 'weight-form'
+  | 'records-tab'
+  | 'records-panel'
+  | 'achievement-tab'
+  | 'achievement-panel'
 
 export interface TourStep {
   id: TourStepId
@@ -69,10 +74,19 @@ const TOUR_STEPS: TourStep[] = [
     requiresAction: true,
   },
   {
+    id: 'diary-route',
+    anchor: 'diary-date-rail',
+    title: '認識每日路徑',
+    description:
+      '週曆用來切換日期；月份下方會顯示當日飲食與運動摘要，也可以開啟完整月曆。',
+  },
+  {
     id: 'diary-editor',
-    anchor: 'diary-editor',
+    anchor: 'diary-destination-rail',
     title: '認識每日紀錄',
-    description: '精細計算會把每天的飲食、運動和實際體重帶回預測。',
+    description:
+      '先點選「飲食」展開每日紀錄；飲食、運動和實際體重都會帶回預測。',
+    requiresAction: true,
   },
   {
     id: 'food-form',
@@ -106,8 +120,36 @@ const TOUR_STEPS: TourStep[] = [
     id: 'weight-form',
     anchor: 'weight-form',
     title: '記錄實際體重',
-    description: '儲存今天的體重後就完成教學，之後可在工作區選單重新開始。',
+    description: '儲存今天的體重後，接著查看當日紀錄與旅程成就。',
     requiresAction: true,
+  },
+  {
+    id: 'records-tab',
+    anchor: 'entries-tab',
+    title: '查看當日紀錄',
+    description: '點選「紀錄」，查看剛才新增的飲食、運動與實際體重。',
+    requiresAction: true,
+  },
+  {
+    id: 'records-panel',
+    anchor: 'records-panel',
+    title: '管理當日紀錄',
+    description:
+      '點選資料列可編輯內容，也能刪除單筆或整日紀錄；超過五筆時列表會獨立捲動。',
+  },
+  {
+    id: 'achievement-tab',
+    anchor: 'achievement-tab',
+    title: '查看旅程成就',
+    description: '點選「成就」，查看跨計畫累積的紀錄日與連續天數。',
+    requiresAction: true,
+  },
+  {
+    id: 'achievement-panel',
+    anchor: 'achievement-panel',
+    title: '累積旅程成就',
+    description:
+      '已解鎖的成就會永久保留，封存計畫的累積成果也不會消失。按下一步完成教學。',
   },
 ]
 

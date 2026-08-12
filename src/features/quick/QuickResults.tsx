@@ -12,6 +12,7 @@ import type {
   WeightMeasurement,
 } from '../../domain/types'
 import { ProjectionPanel } from '../projection/ProjectionPanel'
+import { QuickRouteSummary } from './QuickRouteSummary'
 
 interface QuickResultsProps {
   profile: Profile
@@ -39,6 +40,13 @@ export function QuickResults({
 
   return (
     <div className="results" data-tour-anchor="quick-results">
+      <QuickRouteSummary
+        profile={anchoredProfile}
+        simulation={simulation}
+        tdee={tdee}
+        deficit={deficit}
+        endDate={endDate}
+      />
       <ProjectionPanel
         profile={anchoredProfile}
         simulation={simulation}

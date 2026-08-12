@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import { useAppData } from './app/AppDataContext'
 import { AppBar } from './components/AppBar'
 import { ConfirmDialog } from './components/ConfirmDialog'
@@ -61,6 +61,14 @@ export function App() {
   const activePlan =
     activeUser.plans.find((plan) => plan.status === 'active') ?? null
 
+  useLayoutEffect(() => {
+    const root = document.documentElement
+    root.dataset.page = page
+    return () => {
+      delete root.dataset.page
+    }
+  }, [page])
+
   const chooseMode = (mode: WorkMode) => {
     if (mode === 'diary' && selectedPlan?.status !== 'active') {
       const fallback = activeUser.plans.find((plan) => plan.status === 'active')
@@ -76,7 +84,7 @@ export function App() {
     setPage(mode)
     window.history.replaceState(null, '', `#${mode}`)
     if (mode === 'diary' && tour.step?.id === 'mode-switch') {
-      tour.goTo('diary-editor')
+      tour.goTo('diary-route')
     }
   }
 
@@ -101,7 +109,7 @@ export function App() {
     setPlanDialogOpen(false)
     setPage('diary')
     window.history.replaceState(null, '', '#diary')
-    if (tour.step?.id === 'plan-create') tour.goTo('diary-editor')
+    if (tour.step?.id === 'plan-create') tour.goTo('diary-route')
     return true
   }
 
@@ -125,9 +133,13 @@ export function App() {
   const planTemplate = quickDraft
 
   return (
-    <div className="app-shell with-app-bar">
+    <div className="app-shell with-app-bar" data-page={page}>
       <AppBar
         mode={page}
+        onHome={() => {
+          setPage('home')
+          window.history.replaceState(null, '', window.location.pathname)
+        }}
         onModeChange={chooseMode}
         onImported={applyImportedMode}
         onOpenPlan={openPlan}
@@ -158,7 +170,7 @@ export function App() {
       {page === 'diary' && selectedPlan?.status === 'active' ? (
         <PaceFloat pace={pace} hasPlan={isProfileReady(profile)} />
       ) : null}
-      <DataFooter />
+      {page !== 'home' ? <DataFooter /> : null}
       <NotificationStack />
       {quickNoticePlan ? (
         <QuickDraftNoticeDialog

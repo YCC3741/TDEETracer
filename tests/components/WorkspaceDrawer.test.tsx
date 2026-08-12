@@ -68,11 +68,13 @@ describe('WorkspaceDrawer', () => {
     renderDrawer()
     const trigger = screen.getByRole('button', { name: '開啟工作區選單' })
 
+    expect(trigger).toHaveTextContent('我的資料')
+    expect(trigger).toHaveTextContent('進行計畫')
     await user.click(trigger)
     expect(
       screen.getByRole('heading', { name: '本機使用者與計畫' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('進行計畫')).toBeInTheDocument()
+    expect(screen.getAllByText('進行計畫')).toHaveLength(2)
     expect(screen.getByText('舊計畫')).toBeInTheDocument()
 
     await user.keyboard('{Escape}')
@@ -246,7 +248,6 @@ describe('WorkspaceDrawer', () => {
 
   it('closes the production Drawer and exposes an import parse error', async () => {
     const user = userEvent.setup()
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     renderDrawer()
     await user.click(screen.getByRole('button', { name: '開啟工作區選單' }))
     const input = document.querySelector<HTMLInputElement>('input[type="file"]')
@@ -260,6 +261,10 @@ describe('WorkspaceDrawer', () => {
     })
 
     await user.upload(input, file)
+    const dialog = await screen.findByRole('dialog', {
+      name: '匯入並覆寫本機資料？',
+    })
+    await user.click(within(dialog).getByRole('button', { name: '確認匯入' }))
 
     expect(
       await screen.findByText('匯入失敗：JSON 無法解析'),
@@ -267,6 +272,32 @@ describe('WorkspaceDrawer', () => {
     expect(
       screen.queryByRole('heading', { name: '本機使用者與計畫' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('cancels an import from the application confirmation dialog', async () => {
+    const user = userEvent.setup()
+    renderDrawer()
+    await user.click(screen.getByRole('button', { name: '開啟工作區選單' }))
+    const importButton = screen.getByRole('button', {
+      name: '匯入資料 JSON',
+    })
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]')
+    if (!input) throw new Error('Missing workspace import input')
+
+    await user.upload(
+      input,
+      new File(['invalid'], 'cancelled.json', { type: 'application/json' }),
+    )
+    const dialog = await screen.findByRole('dialog', {
+      name: '匯入並覆寫本機資料？',
+    })
+    await user.click(within(dialog).getByRole('button', { name: '取消' }))
+
+    expect(dialog).not.toBeInTheDocument()
+    expect(importButton).toHaveFocus()
+    expect(
+      screen.getByRole('heading', { name: '本機使用者與計畫' }),
+    ).toBeInTheDocument()
   })
 
   it('opens a focused Dialog from the separated add-user action', async () => {

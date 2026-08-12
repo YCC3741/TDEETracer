@@ -1,5 +1,7 @@
 import { Dialog } from '@base-ui/react/dialog'
 import { useRef, type RefObject } from 'react'
+import { SaoActionButton } from './sao/SaoActionButton'
+import { SaoDialogPopup } from './sao/SaoDialogPopup'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -30,28 +32,31 @@ export function ConfirmDialog({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Backdrop className="confirm-dialog-backdrop" />
-        <Dialog.Viewport className="confirm-dialog-viewport">
-          <Dialog.Popup
+        <Dialog.Backdrop className="confirm-dialog-backdrop sao-dialog-backdrop" />
+        <Dialog.Viewport className="confirm-dialog-viewport sao-dialog-viewport">
+          <SaoDialogPopup
             className="confirm-dialog-popup"
+            eyebrow="System decision"
             initialFocus={cancelRef}
             finalFocus={finalFocus}
-          >
-            <Dialog.Title className="confirm-dialog-title">
-              {title}
-            </Dialog.Title>
-            <Dialog.Description className="confirm-dialog-description">
-              {description}
-            </Dialog.Description>
-            <div className="confirm-dialog-actions">
-              <Dialog.Close ref={cancelRef} className="ghost-btn">
-                取消
-              </Dialog.Close>
-              <button className="danger-btn" type="button" onClick={onConfirm}>
-                {confirmLabel}
-              </button>
-            </div>
-          </Dialog.Popup>
+            title={title}
+            description={description}
+            actions={
+              <>
+                <SaoActionButton
+                  label={confirmLabel}
+                  tone="primary"
+                  onClick={onConfirm}
+                />
+                <Dialog.Close
+                  ref={cancelRef}
+                  render={
+                    <SaoActionButton label="取消" mark="cancel" tone="cancel" />
+                  }
+                />
+              </>
+            }
+          />
         </Dialog.Viewport>
       </Dialog.Portal>
     </Dialog.Root>

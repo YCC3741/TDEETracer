@@ -7,6 +7,7 @@ import {
   STORAGE_GUIDED_TOUR,
   readTourPreference,
 } from '../../../src/features/tour/tourStorage'
+import { createTourSteps } from '../../../src/features/tour/tourSteps'
 import { renderWithAppData } from '../../helpers/renderWithAppData'
 import { TestStorage } from '../../helpers/TestStorage'
 
@@ -52,7 +53,9 @@ describe('TourProvider', () => {
     expect(screen.getByLabelText('phase')).toHaveTextContent('welcome')
     await user.click(screen.getByRole('button', { name: 'start new' }))
     expect(screen.getByLabelText('step')).toHaveTextContent('quick-profile')
-    expect(screen.getByLabelText('count')).toHaveTextContent('13')
+    expect(screen.getByLabelText('count')).toHaveTextContent(
+      String(createTourSteps(false).length),
+    )
 
     await user.click(screen.getByRole('button', { name: 'next' }))
     expect(screen.getByLabelText('step')).toHaveTextContent('quick-fields')
@@ -74,7 +77,9 @@ describe('TourProvider', () => {
 
     expect(screen.getByLabelText('phase')).toHaveTextContent('inactive')
     await user.click(screen.getByRole('button', { name: 'start existing' }))
-    expect(screen.getByLabelText('count')).toHaveTextContent('12')
+    expect(screen.getByLabelText('count')).toHaveTextContent(
+      String(createTourSteps(true).length),
+    )
 
     await user.click(screen.getByRole('button', { name: 'skip' }))
     expect(readTourPreference(storage)).toBe('skipped')

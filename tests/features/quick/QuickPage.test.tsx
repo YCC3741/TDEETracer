@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { NotificationStack } from '../../../src/components/NotificationStack'
@@ -80,10 +80,29 @@ async function fillQuickForm(
   await user.type(screen.getByLabelText('起始體重'), values.weight)
   await user.type(screen.getByLabelText('目標體重'), values.target)
   await chooseOption(user, '平均活動量', activityLabels[values.factor]!)
+  await user.click(screen.getByRole('button', { name: '下一步：熱量策略' }))
   await user.type(screen.getByLabelText('每日攝取熱量'), values.intake)
+  await user.click(screen.getByRole('button', { name: '下一步：確認估算' }))
 }
 
 describe('QuickPage interactions', () => {
+  it('presents the draft as a layered journey with accessible completion status', async () => {
+    const user = userEvent.setup()
+    renderQuick()
+
+    const summary = screen.getByRole('region', { name: 'Quick 旅程摘要' })
+    const progress = screen.getByRole('progressbar', {
+      name: 'Quick 資料完成度',
+    })
+    expect(summary).toHaveTextContent('— kg')
+    expect(progress).toHaveAttribute('value', '0')
+
+    await chooseOption(user, '性別', '女性')
+    await user.type(screen.getByLabelText('年齡'), '30')
+
+    expect(progress).toHaveAttribute('value', '2')
+  })
+
   it('keeps document scrolling enabled while a select popup is open', async () => {
     const user = userEvent.setup()
     renderQuick()
@@ -96,7 +115,7 @@ describe('QuickPage interactions', () => {
     await user.keyboard('{Escape}')
   })
 
-  it('uses short activity labels with hover details', async () => {
+  it('uses short activity labels with keyboard-accessible details', async () => {
     const user = userEvent.setup()
     renderQuick()
 
@@ -105,8 +124,55 @@ describe('QuickPage interactions', () => {
     expect(await screen.findByRole('option', { name: '久坐' })).toBeVisible()
     expect(screen.getByRole('option', { name: '輕度' })).toBeVisible()
     const info = screen.getByLabelText('顯示說明 幾乎不運動')
-    await user.hover(info)
+    info.focus()
     expect(await screen.findByRole('tooltip')).toHaveTextContent('幾乎不運動')
+  })
+
+  it('moves through three explicit steps and saves only from the review step', async () => {
+    const user = userEvent.setup()
+    const { container, storage } = renderQuick()
+    const form = document.querySelector('.quick-form')
+    const firstDetailWindow = container.querySelector('.quick-detail-window')
+
+    expect(form).toHaveAttribute('data-active-step', '1')
+    expect(
+      screen.getByRole('heading', { name: '1. 身體資料' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByLabelText('每日攝取熱量')).not.toBeInTheDocument()
+
+    await chooseOption(user, '性別', '女性')
+    await user.type(screen.getByLabelText('年齡'), '30')
+    await user.type(screen.getByLabelText('身高'), '170')
+    await user.type(screen.getByLabelText('起始體重'), '75')
+    await user.type(screen.getByLabelText('目標體重'), '65')
+    await chooseOption(user, '平均活動量', '輕度')
+    await user.click(screen.getByRole('button', { name: '下一步：熱量策略' }))
+
+    expect(form).toHaveAttribute('data-active-step', '2')
+    const secondDetailWindow = container.querySelector('.quick-detail-window')
+    expect(secondDetailWindow).not.toBe(firstDetailWindow)
+    expect(
+      screen.getByRole('heading', { name: '2. 熱量策略' }),
+    ).toBeInTheDocument()
+    await user.type(screen.getByLabelText('每日攝取熱量'), '1500')
+    await user.click(screen.getByRole('button', { name: '下一步：確認估算' }))
+
+    expect(form).toHaveAttribute('data-active-step', '3')
+    expect(container.querySelector('.quick-detail-window')).not.toBe(
+      secondDetailWindow,
+    )
+    expect(
+      screen.getByRole('heading', { name: '3. 確認估算' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('75 kg → 65 kg')).toBeInTheDocument()
+    expect(storage.getItem(STORAGE_WORKSPACE)).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: '計算減重路程' }))
+    expect(storedQuickDraft(storage)).toMatchObject({
+      weight: 75,
+      target: 65,
+      intake: 1500,
+    })
   })
 
   it('hooks every profile input and intake submit to storage, notification and results', async () => {
@@ -134,8 +200,34 @@ describe('QuickPage interactions', () => {
     expect(
       screen.getByRole('heading', { name: '預估減重路程' }),
     ).toBeInTheDocument()
+    const primaryResult = screen.getByRole('region', {
+      name: 'Quick 主要結果',
+    })
+    expect(within(primaryResult).getByText('每日建議攝取')).toBeInTheDocument()
+    expect(within(primaryResult).getByText('1,500 kcal')).toBeInTheDocument()
+    const routeEta = within(primaryResult).getByText('預估抵達').parentElement
+    expect(routeEta).toHaveClass('quick-route-eta')
+    expect(routeEta).toHaveTextContent(/約.+預估.+到達目標/)
+    expect(
+      within(primaryResult).queryByText('Quick 草稿已儲存'),
+    ).not.toBeInTheDocument()
+    expect(
+      within(primaryResult).queryByText('查看估算假設與安全提醒'),
+    ).not.toBeInTheDocument()
+    const routeTrack =
+      primaryResult.querySelector<HTMLElement>('.quick-route-track')
+    expect(
+      routeTrack?.querySelector('.quick-route-start-node'),
+    ).toHaveAttribute('data-size', 'small')
+    expect(routeTrack?.querySelector('.quick-route-goal-node')).toHaveAttribute(
+      'data-state',
+      'complete',
+    )
+    expect(routeTrack?.querySelector('i')).not.toBeInTheDocument()
     expect(workspace).toHaveClass('has-results')
-    expect(workspace?.querySelector(':scope > .form-card')).toBeInTheDocument()
+    expect(
+      workspace?.querySelector(':scope > .quick-configurator'),
+    ).toBeInTheDocument()
     expect(workspace?.querySelector(':scope > .results')).toBeInTheDocument()
     expect(screen.getByText('已儲存 Quick 草稿。')).toBeInTheDocument()
 
@@ -179,12 +271,19 @@ describe('QuickPage interactions', () => {
     })
     renderQuick(storage)
 
-    const intake = screen.getByLabelText('每日攝取熱量')
+    await user.click(
+      screen.getByRole('button', { name: '前往步驟 1：身體資料' }),
+    )
     const weight = screen.getByLabelText('起始體重')
     await user.clear(weight)
     await user.type(weight, '80')
+    await user.click(
+      screen.getByRole('button', { name: '前往步驟 2：熱量策略' }),
+    )
+    const intake = screen.getByLabelText('每日攝取熱量')
     await user.clear(intake)
     await user.type(intake, '1600')
+    await user.click(screen.getByRole('button', { name: '下一步：確認估算' }))
     await user.click(screen.getByRole('button', { name: '計算減重路程' }))
 
     expect(storedQuickDraft(storage)).toMatchObject({
@@ -200,20 +299,25 @@ describe('QuickPage interactions', () => {
     const user = userEvent.setup()
     const { storage } = renderQuick()
 
-    await user.click(screen.getByRole('button', { name: '設定固定赤字' }))
-    expect(screen.getByLabelText('每日固定赤字')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: '設定每日攝取' }))
-    expect(screen.getByLabelText('每日攝取熱量')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: '設定固定赤字' }))
     await chooseOption(user, '性別', '男性')
     await user.type(screen.getByLabelText('年齡'), '30')
     await user.type(screen.getByLabelText('身高'), '180')
     await user.type(screen.getByLabelText('起始體重'), '90')
     await user.type(screen.getByLabelText('目標體重'), '75')
     await chooseOption(user, '平均活動量', '中度')
+    await user.click(screen.getByRole('button', { name: '下一步：熱量策略' }))
+    await user.click(screen.getByRole('button', { name: '設定固定赤字' }))
+    expect(screen.getByLabelText('每日固定赤字')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '設定每日攝取' }))
+    expect(screen.getByLabelText('每日攝取熱量')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '設定固定赤字' }))
     const deficitInput = screen.getByLabelText('每日固定赤字')
     await user.type(deficitInput, '500')
     await user.type(deficitInput, '{Enter}')
+    expect(
+      screen.getByRole('heading', { name: '3. 確認估算' }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '計算減重路程' }))
 
     expect(storedQuickDraft(storage)).toMatchObject({
       sex: 'male',
@@ -224,6 +328,11 @@ describe('QuickPage interactions', () => {
     expect(
       screen.getByRole('heading', { name: '預估減重路程' }),
     ).toBeInTheDocument()
+    const primaryResult = screen.getByRole('region', {
+      name: 'Quick 主要結果',
+    })
+    expect(within(primaryResult).getByText('每日固定赤字')).toBeInTheDocument()
+    expect(within(primaryResult).getByText('500 kcal')).toBeInTheDocument()
   })
 
   it('rejects a target that is not below the starting weight', async () => {
@@ -250,14 +359,44 @@ describe('QuickPage interactions', () => {
     ).toBeInTheDocument()
   })
 
-  it('lets native input ranges block out-of-range values', async () => {
+  it('keeps safety warnings in notifications without a persistent result card', async () => {
+    const user = userEvent.setup()
+    renderQuick()
+
+    await fillQuickForm(user, { ...validValues, intake: '1100' })
+    await user.click(screen.getByRole('button', { name: '計算減重路程' }))
+
+    const result = screen.getByRole('region', { name: 'Quick 主要結果' })
+    expect(
+      screen.getByText('每日攝取 1100 kcal 低於一般建議下限（1200 kcal）。'),
+    ).toBeInTheDocument()
+    expect(result).not.toHaveTextContent(
+      '每日攝取 1100 kcal 低於一般建議下限（1200 kcal）。',
+    )
+    expect(
+      within(result).queryByRole('note', { name: '安全提醒' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('keeps out-of-range values on the profile step with an inline error', async () => {
     const user = userEvent.setup()
     const { storage } = renderQuick()
 
-    await fillQuickForm(user, { ...validValues, age: '101' })
-    await user.click(screen.getByRole('button', { name: '計算減重路程' }))
+    await chooseOption(user, '性別', '女性')
+    await user.type(screen.getByLabelText('年齡'), '101')
+    await user.type(screen.getByLabelText('身高'), '170')
+    await user.type(screen.getByLabelText('起始體重'), '75')
+    await user.type(screen.getByLabelText('目標體重'), '65')
+    await chooseOption(user, '平均活動量', '輕度')
+    await user.click(screen.getByRole('button', { name: '下一步：熱量策略' }))
 
     expect(storage.getItem(STORAGE_WORKSPACE)).toBeNull()
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      '年齡必須介於 14 至 100 歲。',
+    )
+    expect(
+      screen.getByRole('heading', { name: '1. 身體資料' }),
+    ).toBeInTheDocument()
   })
 
   it('does not announce success when profile persistence fails', async () => {

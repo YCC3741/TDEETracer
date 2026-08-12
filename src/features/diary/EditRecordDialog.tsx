@@ -1,5 +1,7 @@
 import { Dialog } from '@base-ui/react/dialog'
-import type { RefObject } from 'react'
+import { useId, type RefObject } from 'react'
+import { SaoActionButton } from '../../components/sao/SaoActionButton'
+import { SaoDialogPopup } from '../../components/sao/SaoDialogPopup'
 import type { DiaryEntry } from '../../domain/types'
 import { ExerciseForm, FoodForm, WeightForm } from './EntryForms'
 
@@ -25,12 +27,19 @@ export function EditRecordDialog({
   onError,
   onClose,
 }: EditRecordDialogProps) {
+  const formId = useId()
   const title =
     target?.kind === 'weight'
       ? '編輯體重紀錄'
       : target?.entry.type === 'exercise'
         ? '編輯運動紀錄'
         : '編輯飲食紀錄'
+  const submitLabel =
+    target?.kind === 'weight'
+      ? '儲存體重修改'
+      : target?.entry.type === 'exercise'
+        ? '儲存運動修改'
+        : '儲存飲食修改'
 
   const saveEntry = (entry: DiaryEntry): boolean => {
     if (!onUpdateEntry(entry)) return false
@@ -52,48 +61,60 @@ export function EditRecordDialog({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Backdrop className="edit-record-backdrop" />
-        <Dialog.Viewport className="edit-record-viewport">
-          <Dialog.Popup className="edit-record-popup" finalFocus={finalFocus}>
-            <header className="edit-record-head">
-              <div>
-                <span className="eyebrow">Edit record</span>
-                <Dialog.Title>{title}</Dialog.Title>
-              </div>
-              <Dialog.Close aria-label="關閉編輯視窗">×</Dialog.Close>
-            </header>
-            <Dialog.Description className="edit-record-description">
-              修改後會立即更新當日合計與體重預測
-            </Dialog.Description>
+        <Dialog.Backdrop className="edit-record-backdrop sao-dialog-backdrop" />
+        <Dialog.Viewport className="edit-record-viewport sao-dialog-viewport">
+          <SaoDialogPopup
+            className="edit-record-popup"
+            eyebrow="Edit record"
+            finalFocus={finalFocus}
+            size="form"
+            title={title}
+            description="修改後會立即更新當日合計與體重預測"
+            actions={
+              <>
+                <SaoActionButton
+                  form={formId}
+                  label={submitLabel}
+                  tone="primary"
+                  type="submit"
+                />
+                <Dialog.Close
+                  render={
+                    <SaoActionButton label="取消" mark="cancel" tone="cancel" />
+                  }
+                />
+              </>
+            }
+          >
             <div className="edit-record-form">
               {target?.kind === 'weight' ? (
                 <WeightForm
+                  formId={formId}
+                  hideSubmitButton
                   initialWeight={target.weight}
-                  submitLabel="儲存體重修改"
                   onSubmit={saveWeight}
                   onError={onError}
                 />
               ) : target?.entry.type === 'food' ? (
                 <FoodForm
+                  formId={formId}
+                  hideSubmitButton
                   initialEntry={target.entry}
-                  submitLabel="儲存飲食修改"
                   onSubmit={saveEntry}
                   onError={onError}
                 />
               ) : target?.entry.type === 'exercise' ? (
                 <ExerciseForm
+                  formId={formId}
+                  hideSubmitButton
                   weight={exerciseWeight}
                   initialEntry={target.entry}
-                  submitLabel="儲存運動修改"
                   onSubmit={saveEntry}
                   onError={onError}
                 />
               ) : null}
             </div>
-            <Dialog.Close className="ghost-btn edit-record-cancel">
-              取消
-            </Dialog.Close>
-          </Dialog.Popup>
+          </SaoDialogPopup>
         </Dialog.Viewport>
       </Dialog.Portal>
     </Dialog.Root>

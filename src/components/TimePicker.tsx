@@ -8,6 +8,8 @@ import {
   type RefObject,
 } from 'react'
 import { currentTimeString } from '../domain/date'
+import { SaoActionButton } from './sao/SaoActionButton'
+import { SaoGlassBands } from './sao/SaoGlassBands'
 
 interface TimePickerProps {
   label: string
@@ -162,48 +164,56 @@ export function TimePicker({ label, value, onValueChange }: TimePickerProps) {
             collisionPadding={10}
           >
             <Popover.Popup
-              className="picker-popup time-picker-popup"
+              className="picker-popup time-picker-popup sao-glass-popover"
               initialFocus={selectedHourRef}
             >
-              <Popover.Arrow className="picker-arrow" />
-              <Popover.Title className="picker-popup-title">
-                選擇時間
-              </Popover.Title>
-              <div className="time-columns">
-                <TimeColumn
-                  label="小時"
-                  unit="時"
-                  values={HOURS}
-                  selected={hour}
-                  selectedRef={selectedHourRef}
-                  onSelect={setHour}
-                />
-                <TimeColumn
-                  label="分鐘"
-                  unit="分"
-                  values={MINUTES}
-                  selected={minute}
-                  selectedRef={selectedMinuteRef}
-                  onSelect={setMinute}
-                />
-              </div>
-              <div className="picker-popup-actions time-picker-actions">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onValueChange('')
-                    setOpen(false)
-                  }}
-                >
-                  清除
-                </button>
-                <button type="button" onClick={selectCurrentTime}>
-                  現在
-                </button>
-                <button className="apply" type="button" onClick={applyTime}>
-                  套用
-                </button>
-              </div>
+              <SaoGlassBands
+                eyebrow="Time picker"
+                heading={<Popover.Title>選擇時間</Popover.Title>}
+                actions={
+                  <>
+                    <SaoActionButton
+                      label="套用"
+                      tone="primary"
+                      onClick={applyTime}
+                    />
+                    <SaoActionButton
+                      label="現在"
+                      mark="target"
+                      tone="neutral"
+                      onClick={selectCurrentTime}
+                    />
+                    <SaoActionButton
+                      label="清除"
+                      mark="cancel"
+                      tone="cancel"
+                      onClick={() => {
+                        onValueChange('')
+                        setOpen(false)
+                      }}
+                    />
+                  </>
+                }
+              >
+                <div className="time-columns">
+                  <TimeColumn
+                    label="小時"
+                    unit="時"
+                    values={HOURS}
+                    selected={hour}
+                    selectedRef={selectedHourRef}
+                    onSelect={setHour}
+                  />
+                  <TimeColumn
+                    label="分鐘"
+                    unit="分"
+                    values={MINUTES}
+                    selected={minute}
+                    selectedRef={selectedMinuteRef}
+                    onSelect={setMinute}
+                  />
+                </div>
+              </SaoGlassBands>
             </Popover.Popup>
           </Popover.Positioner>
         </Popover.Portal>

@@ -1,6 +1,7 @@
 import { Select } from '@base-ui/react/select'
 import { Tooltip } from '@base-ui/react/tooltip'
 import { useId, useMemo } from 'react'
+import { SaoGlassBands } from './sao/SaoGlassBands'
 
 export interface SelectOption {
   value: string
@@ -54,7 +55,7 @@ export function SelectField({
   const hasDescriptions = options.some((option) => option.description)
 
   return (
-    <Tooltip.Provider delay={100} closeDelay={80}>
+    <Tooltip.Provider delay={0} closeDelay={80}>
       <div className="select-field">
         <Select.Root<string>
           {...(name ? { name } : {})}
@@ -80,42 +81,47 @@ export function SelectField({
               sideOffset={6}
               collisionPadding={10}
             >
-              <Select.Popup className="custom-select-content">
-                <Select.ScrollUpArrow className="custom-select-scroll">
-                  <ChevronIcon />
-                </Select.ScrollUpArrow>
-                <Select.List className="custom-select-viewport">
-                  {options.map((option) => (
-                    <Select.Item
-                      aria-label={option.label}
-                      className="custom-select-item"
-                      key={option.value}
-                      value={option.value}
-                    >
-                      <Select.ItemText>{option.label}</Select.ItemText>
-                      <span className="custom-select-trailing">
-                        <Select.ItemIndicator className="custom-select-indicator">
-                          <CheckIcon />
-                        </Select.ItemIndicator>
-                        {option.description ? (
-                          <Tooltip.Trigger
-                            aria-label={`顯示說明 ${option.description}`}
-                            handle={infoHandle}
-                            payload={{ description: option.description }}
-                            render={
-                              <span className="custom-select-info" tabIndex={0}>
-                                i
-                              </span>
-                            }
-                          />
-                        ) : null}
-                      </span>
-                    </Select.Item>
-                  ))}
-                </Select.List>
-                <Select.ScrollDownArrow className="custom-select-scroll down">
-                  <ChevronIcon />
-                </Select.ScrollDownArrow>
+              <Select.Popup className="custom-select-content sao-glass-select">
+                <SaoGlassBands eyebrow="Selection" heading={<h3>{label}</h3>}>
+                  <Select.ScrollUpArrow className="custom-select-scroll">
+                    <ChevronIcon />
+                  </Select.ScrollUpArrow>
+                  <Select.List className="custom-select-viewport">
+                    {options.map((option) => (
+                      <Select.Item
+                        aria-label={option.label}
+                        className="custom-select-item"
+                        key={option.value}
+                        value={option.value}
+                      >
+                        <Select.ItemText>{option.label}</Select.ItemText>
+                        <span className="custom-select-trailing">
+                          <Select.ItemIndicator className="custom-select-indicator">
+                            <CheckIcon />
+                          </Select.ItemIndicator>
+                          {option.description ? (
+                            <Tooltip.Trigger
+                              aria-label={`顯示說明 ${option.description}`}
+                              handle={infoHandle}
+                              payload={{ description: option.description }}
+                              render={
+                                <span
+                                  className="custom-select-info"
+                                  tabIndex={0}
+                                >
+                                  i
+                                </span>
+                              }
+                            />
+                          ) : null}
+                        </span>
+                      </Select.Item>
+                    ))}
+                  </Select.List>
+                  <Select.ScrollDownArrow className="custom-select-scroll down">
+                    <ChevronIcon />
+                  </Select.ScrollDownArrow>
+                </SaoGlassBands>
               </Select.Popup>
             </Select.Positioner>
           </Select.Portal>

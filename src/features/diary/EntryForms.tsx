@@ -1,4 +1,5 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { LayeredBranchBar } from '../../components/layered/LayeredBranchBar'
 import { SelectField } from '../../components/SelectField'
 import { TimePicker } from '../../components/TimePicker'
 import { estimateExerciseCalories } from '../../domain/calculations'
@@ -6,10 +7,14 @@ import { EXERCISE_PRESETS } from '../../domain/constants'
 import { currentTimeString } from '../../domain/date'
 import type { DiaryEntry, ExerciseEntry, FoodEntry } from '../../domain/types'
 import { useTour } from '../tour/TourContext'
+import type { EntryCategory } from './EntryCategoryRail'
 
 interface EntryFormsProps {
+  activeCategory: EntryCategory
+  achievementPanel: ReactNode
   weight: number | null
   actualWeightKg: number | null
+  showRibbon?: boolean
   onAdd: (entry: DiaryEntry) => boolean
   onSetWeight: (weight: number) => boolean
   onError: (message: string) => void
@@ -38,6 +43,8 @@ function entryId(kind: string): string {
 }
 
 interface FoodFormProps {
+  formId?: string
+  hideSubmitButton?: boolean
   initialEntry?: FoodEntry
   submitLabel?: string
   onSubmit: (entry: FoodEntry) => boolean
@@ -45,6 +52,8 @@ interface FoodFormProps {
 }
 
 export function FoodForm({
+  formId,
+  hideSubmitButton = false,
   initialEntry,
   submitLabel = '＋ 新增飲食並計算',
   onSubmit,
@@ -82,7 +91,7 @@ export function FoodForm({
   }
 
   return (
-    <form className="entry-form" onSubmit={add}>
+    <form id={formId} className="entry-form" onSubmit={add}>
       <div className="entry-form-grid food-grid">
         <TimePicker label="時間（選填）" value={time} onValueChange={setTime} />
         <label>
@@ -90,7 +99,7 @@ export function FoodForm({
           <input
             min="0"
             max="10000"
-            step="10"
+            step="1"
             type="number"
             value={calories}
             onChange={(event) => setCalories(event.target.value)}
@@ -98,14 +107,18 @@ export function FoodForm({
           />
         </label>
       </div>
-      <button className="secondary-btn" type="submit">
-        {submitLabel}
-      </button>
+      {!hideSubmitButton ? (
+        <button className="secondary-btn" type="submit">
+          {submitLabel}
+        </button>
+      ) : null}
     </form>
   )
 }
 
 interface ExerciseFormProps {
+  formId?: string
+  hideSubmitButton?: boolean
   weight: number | null
   initialEntry?: ExerciseEntry
   submitLabel?: string
@@ -114,6 +127,8 @@ interface ExerciseFormProps {
 }
 
 export function ExerciseForm({
+  formId,
+  hideSubmitButton = false,
   weight,
   initialEntry,
   submitLabel = '＋ 新增運動並計算',
@@ -202,7 +217,7 @@ export function ExerciseForm({
   }
 
   return (
-    <form className="entry-form" onSubmit={add}>
+    <form id={formId} className="entry-form" onSubmit={add}>
       <div className="entry-form-grid exercise-grid">
         <SelectField
           label="類型"
@@ -287,14 +302,18 @@ export function ExerciseForm({
               : `MET ${metric} × ${weight} kg × ${numericMinutes} 分 ≈ ${Math.round(estimated)} kcal`
             : '依 MET × 體重 × 時長估算；也可手動改消耗 kcal。'}
       </p>
-      <button className="secondary-btn" type="submit">
-        {submitLabel}
-      </button>
+      {!hideSubmitButton ? (
+        <button className="secondary-btn" type="submit">
+          {submitLabel}
+        </button>
+      ) : null}
     </form>
   )
 }
 
 interface WeightFormProps {
+  formId?: string
+  hideSubmitButton?: boolean
   initialWeight: number | null
   submitLabel?: string
   onSubmit: (weight: number) => boolean
@@ -302,6 +321,8 @@ interface WeightFormProps {
 }
 
 export function WeightForm({
+  formId,
+  hideSubmitButton = false,
   initialWeight,
   submitLabel,
   onSubmit,
@@ -327,7 +348,7 @@ export function WeightForm({
   }
 
   return (
-    <form className="entry-form" onSubmit={save}>
+    <form id={formId} className="entry-form" onSubmit={save}>
       <div className="entry-form-grid weight-grid">
         <label>
           實際體重（kg）
@@ -344,26 +365,20 @@ export function WeightForm({
         </label>
       </div>
       <p className="hint">同一天只保留一筆，再次儲存會更新原紀錄。</p>
-      <button className="secondary-btn" type="submit">
-        {submitLabel ??
-          (initialWeight === null ? '＋ 新增體重紀錄' : '更新體重紀錄')}
-      </button>
+      {!hideSubmitButton ? (
+        <button className="secondary-btn" type="submit">
+          {submitLabel ??
+            (initialWeight === null ? '＋ 新增體重紀錄' : '更新體重紀錄')}
+        </button>
+      ) : null}
     </form>
   )
 }
 
 export function EntryForms(props: EntryFormsProps) {
   const tour = useTour()
-  const [tab, setTab] = useState<'food' | 'exercise' | 'weight'>('food')
-  const guidedTab =
-    tour.step?.id === 'food-form' || tour.step?.id === 'exercise-tab'
-      ? 'food'
-      : tour.step?.id === 'exercise-form' || tour.step?.id === 'weight-tab'
-        ? 'exercise'
-        : tour.step?.id === 'weight-form'
-          ? 'weight'
-          : null
-  const activeTab = guidedTab ?? tab
+  const activeTab = props.activeCategory
+  const showRibbon = props.showRibbon ?? true
 
   const addEntry = (entry: DiaryEntry): boolean => {
     const saved = props.onAdd(entry)
@@ -379,65 +394,56 @@ export function EntryForms(props: EntryFormsProps) {
 
   const setWeight = (weight: number): boolean => {
     const saved = props.onSetWeight(weight)
-    if (saved && tour.step?.id === 'weight-form') tour.complete()
+    if (saved && tour.step?.id === 'weight-form') tour.goTo('records-tab')
     return saved
   }
 
   return (
-    <section className="entry-composer">
-      <div className="segmented entry-tabs">
-        <button
-          className={activeTab === 'food' ? 'active' : ''}
-          type="button"
-          onClick={() => setTab('food')}
+    <section className="entry-composer" data-ribbon={showRibbon}>
+      {showRibbon ? (
+        <LayeredBranchBar
+          className="entry-active-ribbon"
+          connector="left"
+          hiddenFromAssistiveTechnology
         >
-          新增飲食
-        </button>
-        <button
-          className={activeTab === 'exercise' ? 'active' : ''}
-          type="button"
-          data-tour-anchor="exercise-tab"
-          onClick={() => {
-            setTab('exercise')
-            if (tour.step?.id === 'exercise-tab') tour.goTo('exercise-form')
-          }}
-        >
-          新增運動
-        </button>
-        <button
-          className={activeTab === 'weight' ? 'active' : ''}
-          type="button"
-          data-tour-anchor="weight-tab"
-          onClick={() => {
-            setTab('weight')
-            if (tour.step?.id === 'weight-tab') tour.goTo('weight-form')
-          }}
-        >
-          記錄體重
-        </button>
+          <span>
+            {activeTab === 'food'
+              ? '新增飲食'
+              : activeTab === 'exercise'
+                ? '新增運動'
+                : activeTab === 'weight'
+                  ? '記錄體重'
+                  : '旅程成就'}
+          </span>
+          <small>{activeTab.toUpperCase()}</small>
+        </LayeredBranchBar>
+      ) : null}
+      <div className="entry-form-window">
+        {activeTab === 'food' ? (
+          <div data-tour-anchor="food-form">
+            <FoodForm onSubmit={addEntry} onError={props.onError} />
+          </div>
+        ) : activeTab === 'exercise' ? (
+          <div data-tour-anchor="exercise-form">
+            <ExerciseForm
+              weight={props.weight}
+              onSubmit={addEntry}
+              onError={props.onError}
+            />
+          </div>
+        ) : activeTab === 'weight' ? (
+          <div data-tour-anchor="weight-form">
+            <WeightForm
+              key={props.actualWeightKg ?? 'empty'}
+              initialWeight={props.actualWeightKg}
+              onSubmit={setWeight}
+              onError={props.onError}
+            />
+          </div>
+        ) : (
+          props.achievementPanel
+        )}
       </div>
-      {activeTab === 'food' ? (
-        <div data-tour-anchor="food-form">
-          <FoodForm onSubmit={addEntry} onError={props.onError} />
-        </div>
-      ) : activeTab === 'exercise' ? (
-        <div data-tour-anchor="exercise-form">
-          <ExerciseForm
-            weight={props.weight}
-            onSubmit={addEntry}
-            onError={props.onError}
-          />
-        </div>
-      ) : (
-        <div data-tour-anchor="weight-form">
-          <WeightForm
-            key={props.actualWeightKg ?? 'empty'}
-            initialWeight={props.actualWeightKg}
-            onSubmit={setWeight}
-            onError={props.onError}
-          />
-        </div>
-      )}
     </section>
   )
 }

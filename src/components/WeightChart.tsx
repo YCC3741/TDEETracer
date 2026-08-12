@@ -7,11 +7,16 @@ import {
   LineElement,
   PointElement,
   Tooltip,
-  type ChartOptions,
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
 import type { SimulationResult, WeightMeasurement } from '../domain/types'
 import { buildWeightChartData } from '../domain/weightChart'
+import { useCurrentTheme } from '../features/theme/ThemeContext'
+import {
+  createWeightChartData,
+  createWeightChartOptions,
+  readWeightChartPalette,
+} from './weightChartPresentation'
 
 ChartJS.register(
   CategoryScale,
@@ -30,51 +35,22 @@ interface WeightChartProps {
   measurements?: WeightMeasurement[]
 }
 
-const options: ChartOptions<'line'> = {
-  responsive: true,
-  maintainAspectRatio: false,
-  animation: false,
-  interaction: {
-    mode: 'index',
-    intersect: false,
-  },
-  scales: {
-    x: {
-      ticks: {
-        color: '#c9d3dc',
-        maxTicksLimit: 10,
-      },
-      grid: { color: 'rgba(255,255,255,.08)' },
-    },
-    y: {
-      ticks: { color: '#c9d3dc' },
-      grid: { color: 'rgba(255,255,255,.08)' },
-      title: {
-        display: true,
-        text: '體重（kg）',
-        color: '#c9d3dc',
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      labels: { color: '#f7f7f2' },
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => ` ${Number(context.parsed.y).toFixed(2)} kg`,
-      },
-    },
-  },
-}
-
 export function WeightChart({
   simulation,
   startDate,
   label = '預估體重',
   measurements = [],
 }: WeightChartProps) {
-  const data = buildWeightChartData(simulation, startDate, label, measurements)
+  useCurrentTheme()
+  const palette = readWeightChartPalette()
+  const series = buildWeightChartData(
+    simulation,
+    startDate,
+    label,
+    measurements,
+  )
+  const data = createWeightChartData(series, palette)
+  const options = createWeightChartOptions(palette)
 
   return (
     <div className="chart-box">

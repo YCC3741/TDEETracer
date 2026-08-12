@@ -107,13 +107,13 @@ describe('Guided Tour', () => {
       await screen.findByRole('dialog', { name: '查看動態預估' }),
     ).toBeInTheDocument()
     await nextStep(user)
-    await user.click(screen.getByRole('switch', { name: '切換到精細計算' }))
+    await user.click(screen.getByRole('button', { name: '前往追蹤日誌' }))
 
     const planDialog = await screen.findByRole('dialog', {
       name: '開始精確計畫',
     })
     expect(
-      screen.getByRole('dialog', { name: '命名正式計畫' }),
+      await screen.findByRole('dialog', { name: '命名正式計畫' }),
     ).toBeInTheDocument()
     await user.type(
       within(planDialog).getByRole('textbox', { name: '計畫名稱' }),
@@ -124,16 +124,37 @@ describe('Guided Tour', () => {
     )
 
     expect(
+      await screen.findByRole('dialog', { name: '認識每日路徑' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: '七日日期導覽' }),
+    ).toHaveAttribute('data-tour-anchor', 'diary-date-rail')
+    await nextStep(user)
+
+    expect(
       await screen.findByRole('dialog', { name: '認識每日紀錄' }),
     ).toBeInTheDocument()
-    await nextStep(user)
+    const foodDestination = screen.getByRole('button', { name: '新增飲食' })
+    expect(foodDestination).toHaveAttribute('aria-pressed', 'false')
+    expect(
+      screen.getByRole('button', { name: '請完成目前操作' }),
+    ).toBeDisabled()
+    expect(
+      screen.queryByRole('heading', { name: '新增今日紀錄' }),
+    ).not.toBeInTheDocument()
+    await user.click(foodDestination)
+    expect(
+      await screen.findByRole('dialog', { name: '新增一筆飲食' }),
+    ).toBeInTheDocument()
+    expect(foodDestination).toHaveAttribute('aria-pressed', 'true')
     await user.type(screen.getByLabelText('熱量（kcal）'), '500')
     await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
 
-    const achievement = await screen.findByRole('dialog', {
-      name: '初來乍到',
-    })
-    await user.click(within(achievement).getByRole('button', { name: '繼續' }))
+    expect(
+      await screen.findByRole('button', {
+        name: /解鎖 Journey Milestone：初來乍到/,
+      }),
+    ).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '新增運動' }))
     expect(
       await screen.findByRole('dialog', { name: '新增一筆運動' }),
@@ -152,6 +173,56 @@ describe('Guided Tour', () => {
     ).toBeInTheDocument()
     await user.type(screen.getByLabelText('實際體重（kg）'), '74.5')
     await user.click(screen.getByRole('button', { name: '＋ 新增體重紀錄' }))
+
+    expect(
+      await screen.findByRole('dialog', { name: '查看當日紀錄' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: '請完成目前操作' }),
+    ).toBeDisabled()
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 3 筆' }),
+    )
+    expect(
+      await screen.findByRole('dialog', { name: '管理當日紀錄' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: '當日紀錄' }).closest('section'),
+    ).toHaveAttribute('data-tour-anchor', 'records-panel')
+    await user.click(screen.getByRole('button', { name: '上一步' }))
+    expect(
+      await screen.findByRole('dialog', { name: '查看當日紀錄' }),
+    ).toBeInTheDocument()
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 3 筆' }),
+    )
+    expect(
+      await screen.findByRole('dialog', { name: '管理當日紀錄' }),
+    ).toBeInTheDocument()
+    await nextStep(user)
+
+    expect(
+      await screen.findByRole('dialog', { name: '查看旅程成就' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: '請完成目前操作' }),
+    ).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: '查看成就' }))
+    expect(
+      await screen.findByRole('dialog', { name: '累積旅程成就' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: '旅程成就' }).closest('section'),
+    ).toHaveAttribute('data-tour-anchor', 'achievement-panel')
+    await user.click(screen.getByRole('button', { name: '上一步' }))
+    expect(
+      await screen.findByRole('dialog', { name: '查看旅程成就' }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '查看成就' }))
+    expect(
+      await screen.findByRole('dialog', { name: '累積旅程成就' }),
+    ).toBeInTheDocument()
+    await nextStep(user)
 
     await waitFor(() =>
       expect(
@@ -205,11 +276,19 @@ describe('Guided Tour', () => {
       screen.queryByRole('dialog', { name: '快速試算已更新' }),
     ).not.toBeInTheDocument()
     await nextStep(user)
-    await user.click(screen.getByRole('switch', { name: '切換到精細計算' }))
+    await user.click(screen.getByRole('button', { name: '前往追蹤日誌' }))
 
+    expect(
+      await screen.findByRole('dialog', { name: '認識每日路徑' }),
+    ).toBeInTheDocument()
+    await nextStep(user)
     expect(
       await screen.findByRole('dialog', { name: '認識每日紀錄' }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '新增飲食' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
     expect(
       screen.queryByRole('dialog', { name: '開始精確計畫' }),
     ).not.toBeInTheDocument()

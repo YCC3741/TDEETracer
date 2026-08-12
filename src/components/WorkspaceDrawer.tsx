@@ -42,7 +42,9 @@ export function WorkspaceDrawer({
   const [deleteUserTarget, setDeleteUserTarget] = useState<LocalUser | null>(
     null,
   )
+  const [importFile, setImportFile] = useState<File | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const importButtonRef = useRef<HTMLButtonElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const activePlans = appData.activeUser.plans.filter(
     (plan) => plan.status === 'active',
@@ -73,13 +75,17 @@ export function WorkspaceDrawer({
     }
   }
 
-  const importData = async (event: ChangeEvent<HTMLInputElement>) => {
+  const selectImportFile = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file) return
-    if (!window.confirm('匯入會覆寫全部本機使用者與計畫，確定繼續？')) {
-      return
-    }
+    setImportFile(file)
+  }
+
+  const importData = async () => {
+    if (!importFile) return
+    const file = importFile
+    setImportFile(null)
     try {
       const data = await readImportFile(file)
       if (!appData.replaceData(data)) return
@@ -194,9 +200,18 @@ export function WorkspaceDrawer({
           className="data-menu-trigger"
           aria-label="開啟工作區選單"
         >
-          <span aria-hidden="true" />
-          <span aria-hidden="true" />
-          <span aria-hidden="true" />
+          <span className="workspace-trigger-icon" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+          <span className="workspace-trigger-copy">
+            <strong>{appData.activeUser.name}</strong>
+            <small>{appData.selectedPlan?.name ?? 'Quick 草稿'}</small>
+          </span>
+          <span className="workspace-trigger-chevron" aria-hidden="true">
+            ›
+          </span>
         </Drawer.Trigger>
         <Drawer.Portal>
           <Drawer.Backdrop className="workspace-drawer-backdrop" />
@@ -326,6 +341,7 @@ export function WorkspaceDrawer({
                     匯出資料 JSON
                   </button>
                   <button
+                    ref={importButtonRef}
                     type="button"
                     onClick={() => inputRef.current?.click()}
                   >
@@ -336,7 +352,7 @@ export function WorkspaceDrawer({
                     className="data-menu-input"
                     type="file"
                     accept="application/json,.json"
-                    onChange={importData}
+                    onChange={selectImportFile}
                   />
                 </section>
 
@@ -370,6 +386,19 @@ export function WorkspaceDrawer({
         </Drawer.Portal>
       </Drawer.Root>
 
+      <ConfirmDialog
+        open={importFile !== null}
+        title="匯入並覆寫本機資料？"
+        description={
+          importFile
+            ? `將匯入「${importFile.name}」並覆寫全部本機使用者、計畫、日記與成就。此操作無法復原。`
+            : ''
+        }
+        confirmLabel="確認匯入"
+        finalFocus={importButtonRef}
+        onCancel={() => setImportFile(null)}
+        onConfirm={() => void importData()}
+      />
       <ConfirmDialog
         open={archiveTarget !== null}
         title="封存這個計畫？"

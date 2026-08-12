@@ -1,17 +1,32 @@
-import { useId, useRef, useState, type KeyboardEvent } from 'react'
-import { DatePicker } from '../../components/DatePicker'
-import { dayTotals } from '../../domain/calculations'
+import { useState, type ReactNode } from 'react'
+import { LayeredBranchBar } from '../../components/layered/LayeredBranchBar'
 import type { DiaryDay, DiaryEntry } from '../../domain/types'
+import { useTour } from '../tour/TourContext'
 import { DayEntries } from './DayEntries'
+import {
+  EntryCategoryRail,
+  type DiaryEditorDestination,
+  type EntryCategory,
+} from './EntryCategoryRail'
 import { EntryForms } from './EntryForms'
 
 type EditorView = 'add' | 'entries'
+type DirectEntryCategory = Exclude<EntryCategory, 'achievement'>
+
+const directEntryCopy: Record<
+  DirectEntryCategory,
+  { eyebrow: string; title: string }
+> = {
+  food: { eyebrow: 'Food / Intake', title: '新增飲食' },
+  exercise: { eyebrow: 'Exercise / Activity', title: '新增運動' },
+  weight: { eyebrow: 'Weight / Measurement', title: '記錄體重' },
+}
 
 interface DiaryEditorProps {
+  achievementPanel: ReactNode
   selectedDate: string
   day: DiaryDay | null
   weight: number | null
-  onDateChange: (date: string) => void
   onAdd: (entry: DiaryEntry) => boolean
   onUpdateEntry: (entry: DiaryEntry) => boolean
   onSetWeight: (weight: number) => boolean
@@ -24,10 +39,10 @@ interface DiaryEditorProps {
 }
 
 export function DiaryEditor({
+  achievementPanel,
   selectedDate,
   day,
   weight,
-  onDateChange,
   onAdd,
   onUpdateEntry,
   onSetWeight,
@@ -38,137 +53,227 @@ export function DiaryEditor({
   onError,
   readOnly = false,
 }: DiaryEditorProps) {
+  const tour = useTour()
   const [view, setView] = useState<EditorView>(readOnly ? 'entries' : 'add')
-  const panelId = useId()
-  const addTabRef = useRef<HTMLButtonElement>(null)
-  const entriesTabRef = useRef<HTMLButtonElement>(null)
-  const totals = dayTotals(day)
+  const [railExpanded, setRailExpanded] = useState(false)
+  const [entryCategoryState, setEntryCategoryState] = useState<{
+    date: string
+    value: EntryCategory
+  }>({ date: selectedDate, value: 'food' })
+  const entryCategory =
+    entryCategoryState.date === selectedDate ? entryCategoryState.value : 'food'
+  const activeEntryCategory = resolveGuidedCategory(
+    tour.step?.id,
+    entryCategory,
+  )
+  const tourForcesRailExpanded =
+    tour.step?.id === 'food-form' ||
+    tour.step?.id === 'exercise-form' ||
+    tour.step?.id === 'weight-form' ||
+    tour.step?.id === 'records-tab' ||
+    tour.step?.id === 'records-panel' ||
+    tour.step?.id === 'achievement-tab' ||
+    tour.step?.id === 'achievement-panel'
+  const displayedRailExpanded =
+    tour.step?.id === 'diary-editor'
+      ? false
+      : railExpanded || tourForcesRailExpanded
+
+  const selectEntryCategory = (value: EntryCategory) => {
+    setView('add')
+    setEntryCategoryState({ date: selectedDate, value })
+    if (value === 'food' && tour.step?.id === 'diary-editor') {
+      tour.goTo('food-form')
+    }
+    if (value === 'achievement' && tour.step?.id === 'achievement-tab') {
+      tour.goTo('achievement-panel')
+    }
+    if (value === 'exercise' && tour.step?.id === 'exercise-tab') {
+      tour.goTo('exercise-form')
+    }
+    if (value === 'weight' && tour.step?.id === 'weight-tab') {
+      tour.goTo('weight-form')
+    }
+  }
   const entryCount =
     (day?.entries.length ?? 0) + (day?.actualWeightKg === null || !day ? 0 : 1)
+  const activeDestination: DiaryEditorDestination =
+    view === 'entries' ? 'entries' : activeEntryCategory
+  const directEntryCategory: DirectEntryCategory | null =
+    view === 'add' &&
+    !readOnly &&
+    displayedRailExpanded &&
+    isDirectEntryCategory(activeEntryCategory)
+      ? activeEntryCategory
+      : null
+  const directEntry = directEntryCategory !== null
+  const selectDestination = (destination: DiaryEditorDestination) => {
+    if (destination === 'entries' && tour.step?.id === 'records-tab') {
+      setRailExpanded(true)
+      setView('entries')
+      tour.goTo('records-panel')
+      return
+    }
+    if (destination === 'achievement' && tour.step?.id === 'achievement-tab') {
+      setRailExpanded(true)
+      selectEntryCategory('achievement')
+      return
+    }
+    if (displayedRailExpanded && destination === activeDestination) {
+      setRailExpanded(false)
+      return
+    }
+    setRailExpanded(true)
+    if (destination === 'entries') {
+      setView('entries')
+      return
+    }
+    selectEntryCategory(destination)
+  }
   const heading =
-    view === 'add'
-      ? { eyebrow: 'Add entries', title: '新增今日紀錄' }
-      : { eyebrow: 'Daily records', title: '當日紀錄' }
-
-  const activateTab = (nextView: EditorView) => {
-    setView(nextView)
-    const target = nextView === 'add' ? addTabRef : entriesTabRef
-    target.current?.focus()
-  }
-
-  const handleTabKeyDown = (
-    event: KeyboardEvent<HTMLButtonElement>,
-    currentView: EditorView,
-  ) => {
-    if (readOnly) return
-    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
-    event.preventDefault()
-    activateTab(currentView === 'add' ? 'entries' : 'add')
-  }
+    directEntryCategory !== null
+      ? {
+          label: directEntryCopy[directEntryCategory].eyebrow,
+          title: directEntryCopy[directEntryCategory].title,
+        }
+      : view === 'add'
+        ? activeEntryCategory === 'achievement'
+          ? { label: 'Achievements / Journey', title: '旅程成就' }
+          : { label: '每日紀錄', title: '新增今日紀錄' }
+        : { label: 'Records / Daily Log', title: '當日紀錄' }
+  const compactHeading =
+    directEntry || view === 'entries' || activeEntryCategory === 'achievement'
+  const editorOpen = readOnly || displayedRailExpanded
 
   return (
-    <section className="card diary-editor" data-tour-anchor="diary-editor">
-      <header className="section-head">
-        <div>
-          <span className="eyebrow">{heading.eyebrow}</span>
-          <h2>{heading.title}</h2>
-        </div>
-        <div
-          className="panel-tabs editor-view-tabs"
-          role="tablist"
-          aria-label="日記編輯頁面"
-        >
-          {!readOnly ? (
-            <button
-              ref={addTabRef}
-              id={`${panelId}-add-tab`}
-              className={view === 'add' ? 'active' : ''}
-              type="button"
-              role="tab"
-              tabIndex={view === 'add' ? 0 : -1}
-              aria-selected={view === 'add'}
-              aria-controls={`${panelId}-add-panel`}
-              onClick={() => setView('add')}
-              onKeyDown={(event) => handleTabKeyDown(event, 'add')}
-            >
-              新增紀錄
-            </button>
-          ) : null}
-          <button
-            ref={entriesTabRef}
-            id={`${panelId}-entries-tab`}
-            className={view === 'entries' ? 'active' : ''}
-            type="button"
-            role="tab"
-            tabIndex={view === 'entries' ? 0 : -1}
-            aria-selected={view === 'entries'}
-            aria-controls={`${panelId}-entries-panel`}
-            onClick={() => setView('entries')}
-            onKeyDown={(event) => handleTabKeyDown(event, 'entries')}
-          >
-            當日紀錄 <span>{entryCount}</span>
-          </button>
-        </div>
-      </header>
+    <div
+      className="diary-editor-layout"
+      data-entry-layout={directEntry ? 'direct' : 'standard'}
+      data-rail-expanded={displayedRailExpanded && !readOnly}
+      data-read-only={readOnly || undefined}
+    >
+      {!readOnly ? (
+        <EntryCategoryRail
+          activeDestination={activeDestination}
+          entryCount={entryCount}
+          expanded={displayedRailExpanded}
+          onSelect={selectDestination}
+        />
+      ) : null}
 
-      {view === 'add' && !readOnly ? (
-        <div
-          className="editor-add-panel"
-          id={`${panelId}-add-panel`}
-          role="tabpanel"
-          aria-labelledby={`${panelId}-add-tab`}
+      {directEntryCategory ? (
+        <LayeredBranchBar
+          className={`entry-active-ribbon diary-entry-route-ribbon ${directEntryCategory}`}
+          connector="left"
+          hiddenFromAssistiveTechnology
+          key={`diary-entry-ribbon-${directEntryCategory}`}
         >
-          <div className="editor-add-date">
-            <DatePicker
-              label="日期"
-              value={selectedDate}
-              onValueChange={onDateChange}
-            />
-          </div>
-          <div className="day-summary">
-            <div>
-              <span>飲食攝取</span>
-              <strong className="food-value">
-                +{Math.round(totals.intake)} kcal
-              </strong>
+          <span>{directEntryCopy[directEntryCategory].title}</span>
+          <small>{directEntryCategory.toUpperCase()}</small>
+        </LayeredBranchBar>
+      ) : null}
+
+      <div
+        className="diary-editor-stage"
+        data-editor-destination={activeDestination}
+        data-open={editorOpen}
+      >
+        <div className="diary-editor-stage-clip">
+          <section
+            className="card diary-editor layered-window"
+            data-animated-panel={(editorOpen && !readOnly) || undefined}
+            data-direct-entry={directEntry || undefined}
+            data-editor-destination={activeDestination}
+            data-read-only={readOnly || undefined}
+            data-tour-anchor={
+              activeDestination === 'entries'
+                ? 'records-panel'
+                : activeDestination === 'achievement'
+                  ? 'achievement-panel'
+                  : undefined
+            }
+            aria-hidden={!editorOpen || undefined}
+            inert={!editorOpen || undefined}
+            key={
+              editorOpen && !readOnly
+                ? `diary-editor-open-${activeDestination}`
+                : 'diary-editor-standard'
+            }
+          >
+            <header
+              className="section-head"
+              data-compact={compactHeading || undefined}
+            >
+              <div>
+                <span className="route-section-label">{heading.label}</span>
+                <h2>{heading.title}</h2>
+              </div>
+            </header>
+
+            <div className="diary-editor-body" key={activeDestination}>
+              {view === 'add' && !readOnly ? (
+                <div
+                  className={`editor-add-panel${
+                    activeEntryCategory === 'achievement'
+                      ? ' achievement-mode'
+                      : ''
+                  }`}
+                >
+                  <EntryForms
+                    key={selectedDate}
+                    activeCategory={activeEntryCategory}
+                    achievementPanel={achievementPanel}
+                    weight={weight}
+                    actualWeightKg={day?.actualWeightKg ?? null}
+                    showRibbon={
+                      !directEntry && activeEntryCategory !== 'achievement'
+                    }
+                    onAdd={onAdd}
+                    onSetWeight={onSetWeight}
+                    onError={onError}
+                  />
+                </div>
+              ) : (
+                <div className="editor-entries-panel">
+                  <DayEntries
+                    day={day}
+                    exerciseWeight={weight}
+                    onUpdateEntry={onUpdateEntry}
+                    onSetWeight={onSetWeight}
+                    onRemoveEntry={onRemoveEntry}
+                    onRemoveWeight={onRemoveWeight}
+                    onDeleteDay={onDeleteDay}
+                    onReturnToday={onReturnToday}
+                    onError={onError}
+                    readOnly={readOnly}
+                  />
+                  {readOnly ? (
+                    <div className="read-only-achievements">
+                      {achievementPanel}
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
-            <div>
-              <span>運動消耗</span>
-              <strong className="exercise-value">
-                −{Math.round(totals.burn)} kcal
-              </strong>
-            </div>
-          </div>
-          <EntryForms
-            key={selectedDate}
-            weight={weight}
-            actualWeightKg={day?.actualWeightKg ?? null}
-            onAdd={onAdd}
-            onSetWeight={onSetWeight}
-            onError={onError}
-          />
+          </section>
         </div>
-      ) : (
-        <div
-          className="editor-entries-panel"
-          id={`${panelId}-entries-panel`}
-          role="tabpanel"
-          aria-labelledby={`${panelId}-entries-tab`}
-        >
-          <DayEntries
-            day={day}
-            exerciseWeight={weight}
-            onUpdateEntry={onUpdateEntry}
-            onSetWeight={onSetWeight}
-            onRemoveEntry={onRemoveEntry}
-            onRemoveWeight={onRemoveWeight}
-            onDeleteDay={onDeleteDay}
-            onReturnToday={onReturnToday}
-            onError={onError}
-            readOnly={readOnly}
-          />
-        </div>
-      )}
-    </section>
+      </div>
+    </div>
   )
+}
+
+function isDirectEntryCategory(
+  value: EntryCategory,
+): value is DirectEntryCategory {
+  return value === 'food' || value === 'exercise' || value === 'weight'
+}
+
+function resolveGuidedCategory(
+  stepId: string | undefined,
+  fallback: EntryCategory,
+): EntryCategory {
+  if (stepId === 'food-form' || stepId === 'exercise-tab') return 'food'
+  if (stepId === 'exercise-form' || stepId === 'weight-tab') return 'exercise'
+  if (stepId === 'weight-form') return 'weight'
+  return fallback
 }

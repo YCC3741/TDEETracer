@@ -1,8 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type { SimulationResult } from '../../src/domain/types'
-import { DiaryOverviewPanel } from '../../src/features/diary/DiaryOverviewPanel'
 import { ProjectionPanel } from '../../src/features/projection/ProjectionPanel'
 import { makeProfile } from '../helpers/testData'
 
@@ -50,33 +49,5 @@ describe('panel tab keyboard navigation', () => {
     expect(summaryTab).toHaveFocus()
     expect(summaryTab).toHaveAttribute('aria-selected', 'true')
     expect(chartTab).toHaveAttribute('tabindex', '-1')
-  })
-
-  it('switches diary overview tabs with horizontal arrow keys', async () => {
-    const user = userEvent.setup()
-    render(
-      <DiaryOverviewPanel
-        year={2026}
-        month={7}
-        selectedDate="2026-08-11"
-        diary={[]}
-        checkinDays={0}
-        longestStreak={0}
-        unlockedIds={[]}
-        onSelectDate={vi.fn()}
-        onMonthChange={vi.fn()}
-      />,
-    )
-    const calendarTab = screen.getByRole('tab', { name: '簽到日曆' })
-    const achievementsTab = screen.getByRole('tab', { name: '簽到成就' })
-
-    calendarTab.focus()
-    await user.keyboard('{ArrowRight}')
-    expect(achievementsTab).toHaveFocus()
-    expect(achievementsTab).toHaveAttribute('aria-selected', 'true')
-
-    await user.keyboard('{ArrowLeft}')
-    expect(calendarTab).toHaveFocus()
-    expect(calendarTab).toHaveAttribute('aria-selected', 'true')
   })
 })

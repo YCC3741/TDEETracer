@@ -1,6 +1,7 @@
 import { isCheckedIn } from '../../domain/calculations'
 import { todayString, toDateString } from '../../domain/date'
 import type { DiaryDay } from '../../domain/types'
+import { DateTodayMarker } from './DateTodayMarker'
 
 interface DiaryCalendarProps {
   year: number
@@ -47,7 +48,7 @@ export function DiaryCalendar({
           ←
         </button>
         <div>
-          <span className="eyebrow">Check-in calendar</span>
+          <span className="route-section-label">簽到月曆</span>
           <h2>
             {year} 年 {month + 1} 月
           </h2>
@@ -82,9 +83,11 @@ export function DiaryCalendar({
             <button
               className={classNames}
               type="button"
+              aria-label={`${date.replaceAll('-', '/')}${checkins.has(date) ? '，有簽到紀錄' : ''}`}
               key={date}
               onClick={() => onSelect(date)}
             >
+              {date === today ? <DateTodayMarker /> : null}
               <span>{day}</span>
             </button>
           )

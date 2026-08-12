@@ -6,6 +6,23 @@ import {
 } from './date'
 import type { SimulationResult, WeightMeasurement } from './types'
 
+export interface WeightChartSeriesDataset {
+  kind: 'forecast' | 'actual'
+  label: string
+  data: Array<number | null>
+  pointRadius: number
+  pointHoverRadius: number
+  borderWidth: number
+  fill: boolean
+  tension: number
+  spanGaps: boolean
+}
+
+export interface WeightChartSeries {
+  labels: string[]
+  datasets: WeightChartSeriesDataset[]
+}
+
 export function buildWeightChartData(
   simulation: SimulationResult,
   startDate: Date,
@@ -37,12 +54,11 @@ export function buildWeightChartData(
       measurement.weight,
     ]),
   )
-  const datasets = [
+  const datasets: WeightChartSeriesDataset[] = [
     {
+      kind: 'forecast',
       label,
       data: dateKeys.map((date) => forecastByDate.get(date) ?? null),
-      borderColor: '#ffd28a',
-      backgroundColor: 'rgba(255, 174, 96, .16)',
       pointRadius: simulation.daily.length > 60 ? 0 : 2,
       pointHoverRadius: 4,
       borderWidth: 2,
@@ -53,10 +69,9 @@ export function buildWeightChartData(
   ]
   if (sortedMeasurements.length) {
     datasets.push({
+      kind: 'actual',
       label: '實際體重',
       data: dateKeys.map((date) => measurementByDate.get(date) ?? null),
-      borderColor: '#78d7b5',
-      backgroundColor: '#78d7b5',
       pointRadius: 4,
       pointHoverRadius: 6,
       borderWidth: 2,
@@ -69,5 +84,5 @@ export function buildWeightChartData(
   return {
     labels: dateKeys.map((date) => formatDisplayDate(parseLocalDate(date))),
     datasets,
-  }
+  } satisfies WeightChartSeries
 }

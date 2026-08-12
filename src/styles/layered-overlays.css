@@ -1,0 +1,81 @@
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  :is(
+    .custom-select-content,
+    .picker-popup,
+    .calendar-dialog-popup,
+    .edit-record-popup,
+    .confirm-dialog-popup,
+    .data-menu-popup
+  ) {
+  border-color: var(--layered-panel-border);
+  border-radius: 0;
+  color: var(--layered-panel-text);
+  background:
+    linear-gradient(105deg, var(--layered-panel-highlight), transparent 34%),
+    var(--layered-panel-surface-strong);
+  box-shadow: var(--layered-panel-shadow);
+  backdrop-filter: blur(16px);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary']) .custom-select-item {
+  border-radius: 0;
+  color: var(--layered-panel-text);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .custom-select-item[data-highlighted] {
+  color: var(--layered-nav-active-text);
+  background: var(--layered-nav-active-fill);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .custom-tooltip-popup {
+  border-color: var(--layered-panel-border);
+  border-radius: 0;
+  color: var(--layered-panel-text);
+  background: var(--layered-panel-surface-strong);
+  box-shadow: var(--layered-panel-shadow);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  :is(.confirm-dialog-title, .calendar-dialog-head, .edit-record-head) {
+  color: var(--layered-panel-text);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  :is(.confirm-dialog-actions, .picker-popup-actions)
+  .primary-btn {
+  border-color: var(--layered-nav-active-surface);
+  border-radius: 0;
+  color: var(--layered-nav-active-text);
+  background: var(--layered-nav-active-fill);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .tour-coachmark:not(.welcome) {
+  border-color: var(--layered-panel-border);
+  border-radius: 0;
+  color: var(--layered-panel-text);
+  background: var(--layered-panel-surface-strong);
+  box-shadow: var(--layered-panel-shadow);
+}
+
+@media (forced-colors: active), (prefers-contrast: more) {
+  :where(:root[data-page='quick'], :root[data-page='diary'])
+    :is(
+      .custom-select-content,
+      .picker-popup,
+      .calendar-dialog-popup,
+      .edit-record-popup,
+      .confirm-dialog-popup,
+      .data-menu-popup,
+      .custom-tooltip-popup,
+      .tour-coachmark
+    ) {
+    border: 2px solid CanvasText;
+    color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+}

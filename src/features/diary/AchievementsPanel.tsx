@@ -1,5 +1,3 @@
-import { Dialog } from '@base-ui/react/dialog'
-import { useRef } from 'react'
 import { ACHIEVEMENTS, STREAK_ACHIEVEMENTS } from '../../domain/constants'
 import type { Achievement, AchievementId } from '../../domain/types'
 
@@ -24,7 +22,9 @@ function AchievementTile({
     unlockedIds.has(`${achievement.kind}:${achievement.days}`)
   return (
     <article className={`achievement${unlocked ? ' unlocked' : ''}`}>
-      <span>{unlocked ? '✦' : '◇'}</span>
+      <span className="achievement-node" aria-hidden="true">
+        <i />
+      </span>
       <strong>{achievement.title}</strong>
       <small>{achievement.days} 天</small>
     </article>
@@ -109,50 +109,5 @@ export function AchievementsPanel({
         unlockedIds={unlockedIds}
       />
     </section>
-  )
-}
-
-interface AchievementModalProps {
-  achievement: Achievement
-  onClose: () => void
-}
-
-export function AchievementModal({
-  achievement,
-  onClose,
-}: AchievementModalProps) {
-  const continueRef = useRef<HTMLButtonElement>(null)
-  return (
-    <Dialog.Root
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <Dialog.Portal>
-        <Dialog.Viewport className="achievement-modal">
-          <Dialog.Popup
-            className="achievement-modal-card"
-            initialFocus={continueRef}
-          >
-            <div className="modal-star">✦</div>
-            <span className="eyebrow">Achievement unlocked</span>
-            <Dialog.Title>{achievement.title}</Dialog.Title>
-            <Dialog.Description>
-              {achievement.kind === 'streak'
-                ? `已連續 ${achievement.days} 天留下明細紀錄。`
-                : `已累積 ${achievement.days} 個有明細的紀錄日。`}
-            </Dialog.Description>
-            <Dialog.Close
-              ref={continueRef}
-              className="primary-btn"
-              type="button"
-            >
-              繼續
-            </Dialog.Close>
-          </Dialog.Popup>
-        </Dialog.Viewport>
-      </Dialog.Portal>
-    </Dialog.Root>
   )
 }

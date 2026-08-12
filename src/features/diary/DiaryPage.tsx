@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppData } from '../../app/AppDataContext'
+import { LayeredStatus } from '../../components/layered/LayeredStatus'
 import {
+  isCheckedIn,
   isProfileReady,
   longestCheckinStreak,
   uniqueCheckinDays,
@@ -9,18 +11,23 @@ import {
   achievementSeenKey,
   newlyUnlockedAchievements,
 } from '../../domain/achievements'
-import { parseLocalDate, todayString, toDateString } from '../../domain/date'
+import {
+  addDays,
+  parseLocalDate,
+  todayString,
+  toDateString,
+} from '../../domain/date'
 import {
   buildActualsByDate,
   latestWeightMeasurement,
   resolveForecastAnchor,
   simulateWeightPath,
 } from '../../domain/projection'
-import type { Achievement, DiaryDay, DiaryEntry } from '../../domain/types'
-import { AchievementModal } from './AchievementsPanel'
+import type { DiaryDay, DiaryEntry } from '../../domain/types'
+import { DiaryDateRail } from './DiaryDateRail'
 import { DiaryEditor } from './DiaryEditor'
-import { DiaryOverviewPanel } from './DiaryOverviewPanel'
 import { DiaryProjection } from './DiaryProjection'
+import { JourneyMilestonesPanel } from './JourneyMilestonesPanel'
 
 function emptyDay(date: string): DiaryDay {
   return {
@@ -60,7 +67,6 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
   )
   const [calendarYear, setCalendarYear] = useState(initialDate.getFullYear())
   const [calendarMonth, setCalendarMonth] = useState(initialDate.getMonth())
-  const [celebration, setCelebration] = useState<Achievement | null>(null)
   const warnedNoProfile = useRef(false)
 
   const selectedDay = diary.find((day) => day.date === selectedDate) ?? null
@@ -71,6 +77,18 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
   const userDiary = activeUser.plans.flatMap((plan) => plan.diary)
   const checkinDays = uniqueCheckinDays(userDiary)
   const longestStreak = longestCheckinStreak(userDiary)
+  const selectedForWeek = isValidDiaryDate(selectedDate)
+    ? parseLocalDate(selectedDate)
+    : initialDate
+  const weekStart = addDays(selectedForWeek, -selectedForWeek.getDay())
+  const visibleWeek = new Set(
+    Array.from({ length: 7 }, (_, index) =>
+      toDateString(addDays(weekStart, index)),
+    ),
+  )
+  const weeklyCheckins = diary.filter(
+    (day) => visibleWeek.has(day.date) && isCheckedIn(day),
+  ).length
 
   useEffect(() => {
     if (isProfileReady(profile) || warnedNoProfile.current) return
@@ -123,7 +141,16 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
     if (!upsertDay(day, nextSeen)) return false
 
     if (unlocked.length) {
-      setCelebration(unlocked[unlocked.length - 1] ?? null)
+      unlocked.forEach((achievement) => {
+        const progressLabel =
+          achievement.kind === 'streak'
+            ? `歷史最長連續 ${achievement.days} 天`
+            : `累積 ${achievement.days} 個紀錄日`
+        notify(
+          'ok',
+          `解鎖 Journey Milestone：${achievement.title} · ${progressLabel}`,
+        )
+      })
     }
 
     notify(
@@ -245,12 +272,10 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
 
   return (
     <main className="page-content diary-page">
-      <section className="page-hero diary-hero">
-        <div>
-          <span className="eyebrow">Detailed calculation</span>
-          <h1>記下今天 讓預測回到真實生活</h1>
-        </div>
-      </section>
+      <header className="layered-page-heading">
+        <span>Daily route log</span>
+        <h1>為美好生活獻上祝福</h1>
+      </header>
 
       {readOnly ? (
         <div className="archive-banner" role="status">
@@ -258,27 +283,30 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
         </div>
       ) : null}
 
-      <div className="diary-dashboard">
-        <DiaryOverviewPanel
-          year={calendarYear}
-          month={calendarMonth}
-          selectedDate={selectedDate}
-          diary={diary}
-          checkinDays={checkinDays}
-          longestStreak={longestStreak}
-          unlockedIds={activeUser.achievementsUnlocked}
-          onSelectDate={selectDate}
-          onMonthChange={(year, month) => {
-            setCalendarYear(year)
-            setCalendarMonth(month)
-          }}
-        />
+      <DiaryDateRail
+        year={calendarYear}
+        month={calendarMonth}
+        selectedDate={selectedDate}
+        diary={diary}
+        onSelect={selectDate}
+        onMonthChange={(year, month) => {
+          setCalendarYear(year)
+          setCalendarMonth(month)
+        }}
+      />
 
+      <div className="diary-dashboard">
         <DiaryEditor
+          achievementPanel={
+            <JourneyMilestonesPanel
+              checkinDays={checkinDays}
+              longestStreak={longestStreak}
+              unlockedIds={activeUser.achievementsUnlocked}
+            />
+          }
           selectedDate={selectedDate}
           day={selectedDay}
           weight={exerciseWeight}
-          onDateChange={selectDate}
           onAdd={addEntry}
           onUpdateEntry={updateEntry}
           onSetWeight={setActualWeight}
@@ -291,18 +319,20 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
         />
       </div>
 
+      <LayeredStatus
+        className="weekly-progress-hud"
+        floating
+        label="本週簽到進度"
+        value={weeklyCheckins}
+        max={7}
+        detail={`累積 ${checkinDays} 日`}
+      />
+
       <DiaryProjection
         profile={profile}
         diary={diary}
         startDate={initialDate}
       />
-
-      {celebration ? (
-        <AchievementModal
-          achievement={celebration}
-          onClose={() => setCelebration(null)}
-        />
-      ) : null}
     </main>
   )
 }

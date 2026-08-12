@@ -1,0 +1,583 @@
+:root[data-page='quick'] .quick-strategy-branches {
+  display: grid;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-page='quick'] .quick-strategy-branches > button {
+  position: relative;
+  min-height: 52px;
+  padding: 0 24px;
+  border: 1px solid var(--layered-panel-border);
+  border-radius: 0;
+  color: var(--layered-ribbon-text);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 28%),
+    linear-gradient(
+      95deg,
+      var(--layered-ribbon-idle),
+      color-mix(in srgb, var(--layered-ribbon-idle) 72%, #8a9091)
+    );
+  box-shadow: 0 7px 15px rgba(4, 12, 16, 0.24);
+  clip-path: none;
+}
+
+:root[data-page='quick'] .quick-strategy-branches > button.active {
+  color: var(--layered-nav-active-text);
+  background: var(--layered-nav-active-fill);
+}
+
+:root[data-page='quick'] .quick-result-summary {
+  border-radius: 0;
+  background:
+    linear-gradient(105deg, var(--layered-panel-highlight), transparent 32%),
+    var(--layered-panel-surface);
+}
+
+:root[data-page='quick'] .quick-result-summary > header {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--layered-panel-line);
+}
+
+:root[data-page='quick'] .quick-primary-result {
+  position: relative;
+  display: grid;
+  min-height: 138px;
+  padding: 24px 28px 24px 34px;
+  border: 0;
+  border-top: 1px solid var(--layered-panel-highlight);
+  border-bottom: 1px solid var(--layered-panel-line);
+  border-left: 5px solid var(--layered-nav-active-surface);
+  border-radius: 0;
+  color: var(--layered-panel-text);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--layered-nav-active-surface) 10%, transparent),
+      transparent 45%
+    ),
+    transparent;
+  box-shadow: none;
+  align-content: center;
+}
+
+:root[data-page='quick'] .quick-primary-result::after {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: var(--layered-nav-active-deep);
+  content: 'ROUTE OUTPUT';
+  font-family: var(--font-compact);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+:root[data-page='quick'] .quick-primary-result > span,
+:root[data-page='quick'] .quick-primary-result > small {
+  color: var(--layered-panel-muted);
+}
+
+:root[data-page='quick'] .quick-primary-result > strong {
+  color: var(--layered-panel-text);
+}
+
+:root[data-page='quick'] .quick-route-eta {
+  border-color: var(--layered-panel-line);
+}
+
+:root[data-page='quick'] .quick-route-eta > span {
+  color: var(--layered-panel-muted);
+  font-family: var(--font-compact);
+  text-transform: uppercase;
+}
+
+:root[data-page='quick'] .quick-route-eta > strong {
+  color: var(--layered-panel-text);
+}
+
+:root[data-page='quick'] .quick-route-track .route-line {
+  height: 2px;
+  border: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--layered-panel-muted) 0 18px,
+    transparent 18px 24px
+  );
+}
+
+:root[data-page='quick'] .quick-route-track b {
+  color: var(--layered-panel-text);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary']) .layered-projection {
+  padding: clamp(26px, 3.5vw, 42px);
+  border-radius: 0;
+  color: var(--layered-panel-text);
+  background:
+    linear-gradient(105deg, var(--layered-panel-highlight), transparent 32%),
+    var(--layered-panel-surface);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .projection-head {
+  display: grid;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--layered-panel-line);
+  grid-template-columns: minmax(180px, 0.7fr) minmax(0, 1.3fr);
+  align-items: end;
+  gap: 24px;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-ribbon-tabs {
+  display: flex;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  gap: 5px;
+  background: transparent;
+  box-shadow: none;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .projection-head
+  .layered-ribbon-tabs {
+  justify-self: end;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-ribbon-tabs
+  > button {
+  min-height: 46px;
+  padding: 0 19px;
+  border: 1px solid var(--layered-panel-border);
+  border-radius: 0;
+  color: var(--layered-ribbon-text);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.13), transparent 28%),
+    var(--layered-ribbon-idle);
+  box-shadow: 0 6px 12px rgba(4, 12, 16, 0.2);
+  clip-path: none;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-ribbon-tabs
+  > button.active {
+  color: var(--layered-nav-active-text);
+  background: var(--layered-nav-active-fill);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .stats-grid {
+  display: grid;
+  margin-top: 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .layered-stat {
+  position: relative;
+  display: grid;
+  min-height: 126px;
+  padding: 24px 28px;
+  border: 0;
+  border-bottom: 1px solid var(--layered-panel-line);
+  border-left: 3px solid transparent;
+  border-radius: 0;
+  color: var(--layered-panel-text);
+  background: transparent;
+  box-shadow: none;
+  align-content: center;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .layered-stat:nth-child(odd) {
+  border-left-color: var(--layered-nav-active-surface);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--layered-nav-active-surface) 8%, transparent),
+    transparent 52%
+  );
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .layered-stat:nth-child(even) {
+  border-left-color: var(--layered-panel-line);
+  background: color-mix(in srgb, var(--layered-panel-text) 3%, transparent);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .layered-stat
+  > span,
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .layered-stat
+  > small {
+  color: var(--layered-panel-muted);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .layered-stat
+  > strong {
+  color: var(--layered-panel-text);
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .tdee-board {
+  display: grid;
+  margin-top: 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .tdee-item {
+  min-height: 92px;
+  padding: 18px 22px;
+  border: 0;
+  border-bottom: 1px solid var(--layered-panel-line);
+  border-left: 3px solid var(--layered-panel-line);
+  border-radius: 0;
+  color: var(--layered-panel-text);
+  background: transparent;
+  box-shadow: none;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  .tdee-item:nth-child(odd) {
+  border-left-color: var(--layered-nav-active-surface);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--layered-nav-active-surface) 7%, transparent),
+    transparent 58%
+  );
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  :is(.chart-box, .table-box) {
+  border-color: var(--layered-panel-line);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--layered-panel-text) 3%, transparent);
+  box-shadow: none;
+}
+
+:where(:root[data-page='quick'], :root[data-page='diary'])
+  .layered-projection
+  thead
+  th {
+  color: var(--layered-nav-active-text);
+  background: rgba(244, 180, 0, 0.6);
+  box-shadow: 0 1px 0 var(--layered-panel-line);
+}
+
+:root[data-page='diary'] .layered-pace-hud {
+  display: grid;
+  width: min(300px, calc(100vw - 28px));
+  min-height: 96px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--layered-status-text);
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(var(--layered-status-shadow));
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: stretch;
+}
+
+:root[data-page='diary'] .pace-hud-mark {
+  z-index: 1;
+  height: 100%;
+}
+
+:root[data-page='diary'] .pace-hud-copy {
+  display: grid;
+  min-width: 0;
+  padding: 15px 21px 21px;
+  border: 2px solid var(--layered-status-border);
+  border-radius: 0;
+  background:
+    linear-gradient(110deg, var(--layered-status-highlight), transparent 38%),
+    var(--layered-status-surface);
+  clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 13px, 100% 100%, 0 100%);
+  align-content: center;
+  gap: 4px;
+}
+
+:root[data-page='diary'] .pace-hud-copy > span {
+  color: var(--layered-status-muted);
+  font-family: var(--font-compact);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+:root[data-page='diary'] .pace-hud-copy > strong {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+:root[data-page='diary'] .pace-hud-copy > small {
+  color: var(--layered-status-muted);
+  font-size: 0.68rem;
+}
+
+:root[data-page='diary'] .pace-hud-meter {
+  position: absolute;
+  right: 13px;
+  bottom: 9px;
+  left: 38px;
+  height: 5px;
+  border: 1px solid var(--layered-status-meter-border);
+  background: var(--layered-status-track);
+}
+
+:root[data-page='diary'] .pace-hud-meter > i {
+  display: block;
+  width: 58%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--layered-status-fill),
+    var(--layered-status-fill-light)
+  );
+}
+
+:root[data-page='diary'] .editor-view-tabs {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-page='diary'] .editor-view-tabs > button {
+  clip-path: none;
+}
+
+:root[data-page='diary'] .editor-view-tabs button > span {
+  min-width: 22px;
+  height: 22px;
+  border-radius: 0;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+:root[data-page='diary'] .entry-tabs.layered-category-rail {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-page='diary'] .layered-category-rail > button {
+  place-items: center;
+}
+
+:root[data-page='diary'] .entry-category-node .layered-circle-node-body {
+  grid-template-rows: 24px auto;
+  align-content: center;
+  gap: 3px;
+}
+
+:root[data-page='diary'] .layered-category-rail svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:root[data-page='diary'] .entry-category-node {
+  font-size: 0.58rem;
+  font-weight: 750;
+}
+
+:root[data-page='diary'] .day-summary {
+  display: grid;
+  border: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  background: transparent;
+}
+
+:root[data-page='diary'] .day-summary > .day-summary-item {
+  position: relative;
+  display: grid;
+  min-height: 92px;
+  padding: 18px 22px;
+  border: 0;
+  border-bottom: 1px solid var(--layered-panel-line);
+  border-left: 4px solid var(--layered-nav-active-surface);
+  border-radius: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--layered-nav-active-surface) 8%, transparent),
+    transparent 64%
+  );
+  box-shadow: none;
+  align-content: center;
+}
+
+:root[data-page='diary'] .day-summary > .day-summary-item:last-child {
+  border-left-color: var(--layered-complete);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--layered-complete) 8%, transparent),
+    transparent 64%
+  );
+}
+
+:root[data-page='diary'] .day-summary-item > span {
+  color: var(--layered-panel-muted);
+}
+
+.layered-branch-bar {
+  position: relative;
+  overflow: visible;
+  --layered-branch-connector-colour: currentColor;
+  clip-path: none;
+}
+
+.layered-branch-bar[data-connector='left'] {
+  margin-left: 12px;
+}
+
+.layered-branch-bar[data-connector='right'] {
+  margin-right: 12px;
+}
+
+.layered-branch-bar[data-connector='left']::before,
+.layered-branch-bar[data-connector='right']::after {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 20px;
+  content: '';
+  background: var(--layered-branch-connector-colour);
+  -webkit-mask: url('../assets/aincrad-side-connector.svg') center / 100% 100%
+    no-repeat;
+  mask: url('../assets/aincrad-side-connector.svg') center / 100% 100% no-repeat;
+}
+
+.layered-branch-bar[data-connector='left']::before {
+  left: -12px;
+  transform: translateY(-50%);
+}
+
+.layered-branch-bar[data-connector='right']::after {
+  right: -12px;
+  transform: translateY(-50%) scaleX(-1);
+}
+
+.quick-active-ribbon {
+  --layered-branch-connector-colour: var(--layered-nav-active-fill);
+  clip-path: none;
+}
+
+:root[data-page='diary'] .entry-active-ribbon {
+  right: 0;
+  left: 0;
+  --layered-branch-connector-colour: var(--layered-nav-active-fill);
+  clip-path: none;
+}
+
+:root[data-page='quick'] :is(.quick-step-actions, .quick-review) .primary-btn,
+:root[data-page='diary'] .entry-form .secondary-btn {
+  border-radius: 0;
+  clip-path: none;
+}
+
+@media (max-width: 800px) {
+  :where(:root[data-page='quick'], :root[data-page='diary'])
+    .layered-projection
+    .projection-head {
+    grid-template-columns: 1fr;
+  }
+
+  :where(:root[data-page='quick'], :root[data-page='diary'])
+    .layered-ribbon-tabs {
+    width: 100%;
+    overflow-x: auto;
+    justify-self: stretch;
+  }
+
+  :where(:root[data-page='quick'], :root[data-page='diary'])
+    .layered-ribbon-tabs
+    > button {
+    min-width: 132px;
+    flex: 1;
+  }
+
+  :root[data-page='diary'] .layered-category-rail > button {
+    clip-path: none;
+  }
+}
+
+@media (max-width: 520px) {
+  :root[data-page='quick'] .quick-strategy-branches,
+  :where(:root[data-page='quick'], :root[data-page='diary'])
+    .layered-projection
+    .stats-grid,
+  :where(:root[data-page='quick'], :root[data-page='diary'])
+    .layered-projection
+    .tdee-board,
+  :root[data-page='diary'] .day-summary {
+    grid-template-columns: 1fr;
+  }
+
+  :where(:root[data-page='quick'], :root[data-page='diary'])
+    .layered-projection {
+    padding: 22px 18px;
+  }
+}
+
+@media (forced-colors: active), (prefers-contrast: more) {
+  :root[data-page='quick'] .quick-strategy-branches > button,
+  :where(:root[data-page='quick'], :root[data-page='diary'])
+    .layered-ribbon-tabs
+    > button,
+  :root[data-page='diary'] .pace-hud-copy {
+    border: 2px solid CanvasText;
+    color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    clip-path: none;
+  }
+
+  .layered-branch-bar {
+    margin: 0;
+  }
+
+  .layered-branch-bar::before,
+  .layered-branch-bar::after {
+    display: none;
+  }
+
+  :root[data-page='diary'] .entry-active-ribbon {
+    left: 0;
+  }
+}

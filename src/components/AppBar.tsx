@@ -1,9 +1,12 @@
-import { useAppData } from '../app/AppDataContext'
 import type { PageName, WorkMode } from '../domain/types'
+import { BrandMark } from './BrandMark'
+import { MobileNavigation } from './MobileNavigation'
+import { ThemeToggle } from './ThemeToggle'
 import { WorkspaceDrawer } from './WorkspaceDrawer'
 
 interface AppBarProps {
   mode: PageName
+  onHome: () => void
   onModeChange: (mode: WorkMode) => void
   onImported: (mode: WorkMode | null) => void
   onOpenPlan: (planId: string) => void
@@ -14,6 +17,7 @@ interface AppBarProps {
 
 export function AppBar({
   mode,
+  onHome,
   onModeChange,
   onImported,
   onOpenPlan,
@@ -21,45 +25,65 @@ export function AppBar({
   onRestartTour,
   onUserSelected,
 }: AppBarProps) {
-  const { activeUser, selectedPlan } = useAppData()
-  const isDiary = mode === 'diary'
+  const workspaceProps = {
+    onOpenPlan,
+    onStartPlan,
+    onRestartTour,
+    onUserSelected,
+    onImported,
+  }
+
   return (
     <header className="app-bar">
       <div className="app-bar-inner">
-        <WorkspaceDrawer
-          onOpenPlan={onOpenPlan}
-          onStartPlan={onStartPlan}
-          onRestartTour={onRestartTour}
-          onUserSelected={onUserSelected}
-          onImported={onImported}
-        />
-        <div className="app-bar-title">
-          <span className="eyebrow">{activeUser.name}</span>
-          <strong>
-            {mode === 'home'
-              ? 'TDEE Planner'
-              : isDiary
-                ? (selectedPlan?.name ?? '精細計算')
-                : '快速計算'}
-          </strong>
+        <div className="app-bar-leading">
+          <button
+            className="app-brand"
+            type="button"
+            aria-label="前往首頁"
+            onClick={onHome}
+          >
+            <BrandMark className="app-brand-mark" />
+            <span>
+              <strong>TDEETracer</strong>
+              <small>Future route planner</small>
+            </span>
+          </button>
+          <WorkspaceDrawer {...workspaceProps} />
         </div>
-        <div
-          className={`mode-switch-wrap${mode === 'home' ? ' hidden' : ''}`}
-          aria-label="切換計算模式"
+
+        <nav
+          className="page-tabs-nav"
+          aria-label="主要導覽"
           data-tour-anchor="mode-switch"
         >
-          <span className={!isDiary ? 'active' : ''}>快速</span>
           <button
-            className={`mode-toggle${isDiary ? ' on' : ''}`}
+            className={mode === 'quick' ? 'active' : ''}
             type="button"
-            role="switch"
-            aria-checked={isDiary}
-            aria-label={isDiary ? '切換到快速計算' : '切換到精細計算'}
-            onClick={() => onModeChange(isDiary ? 'quick' : 'diary')}
+            aria-label="前往快速規劃"
+            aria-current={mode === 'quick' ? 'page' : undefined}
+            onClick={() => onModeChange('quick')}
           >
-            <span />
+            快速規劃
           </button>
-          <span className={isDiary ? 'active' : ''}>精細</span>
+          <button
+            className={mode === 'diary' ? 'active' : ''}
+            type="button"
+            aria-label="前往追蹤日誌"
+            aria-current={mode === 'diary' ? 'page' : undefined}
+            onClick={() => onModeChange('diary')}
+          >
+            追蹤日誌
+          </button>
+        </nav>
+
+        <div className="app-bar-actions">
+          <ThemeToggle />
+          <MobileNavigation
+            onHome={onHome}
+            onModeChange={onModeChange}
+            workspaceEntry={<WorkspaceDrawer {...workspaceProps} />}
+          />
         </div>
       </div>
     </header>

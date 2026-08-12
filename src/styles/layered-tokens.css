@@ -1,0 +1,94 @@
+:where(:root[data-page='quick'], :root[data-page='diary']) {
+  --layered-art: url('../../assets/tdeetracer-key-visual-v5-petite-fox-mage.png');
+  --layered-stage-scrim: rgba(10, 25, 32, 0.38);
+  --layered-stage-overlay: rgba(17, 27, 32, 0.12);
+  --layered-stage-max-width: 1280px;
+  --layered-stage-padding: clamp(18px, 3.6vw, 54px);
+  --layered-panel-surface: rgba(249, 250, 249, 0.94);
+  --layered-panel-surface-strong: rgba(233, 236, 235, 0.96);
+  --layered-panel-text: #3e4547;
+  --layered-panel-muted: #70787a;
+  --layered-panel-line: rgba(58, 65, 67, 0.28);
+  --layered-panel-border: rgba(255, 255, 255, 0.7);
+  --layered-panel-highlight: rgba(255, 255, 255, 0.86);
+  --layered-panel-shadow: 0 22px 42px rgba(4, 12, 16, 0.34);
+  --layered-nav-idle-surface: #c8cccb;
+  --layered-nav-idle-text: #4b5153;
+  --layered-nav-active-surface: #f4b400;
+  --layered-nav-active-fill: rgba(244, 180, 0, 0.9);
+  --layered-nav-active-light: #ffd641;
+  --layered-nav-active-deep: #d89200;
+  --layered-nav-active-text: #493700;
+  --layered-nav-connector: rgba(246, 248, 247, 0.72);
+  --layered-circle-neutral-end: #aeb4b3;
+  --layered-ribbon-idle: var(--layered-nav-idle-surface);
+  --layered-ribbon-text: var(--layered-nav-idle-text);
+  --layered-control-surface: rgba(255, 255, 255, 0.86);
+  --layered-control-border: rgba(61, 68, 70, 0.26);
+  --layered-control-text: #3e4547;
+  --layered-control-placeholder: #8f9799;
+  --layered-focus-ring: #245f78;
+  --layered-status-surface: rgba(249, 250, 249, 0.96);
+  --layered-status-track: #d5dad8;
+  --layered-status-text: #3e4547;
+  --layered-status-muted: #697174;
+  --layered-status-border: rgba(62, 69, 71, 0.48);
+  --layered-status-meter-border: rgba(62, 69, 71, 0.34);
+  --layered-status-detail-start: #edf0ef;
+  --layered-status-detail-end: #c3cac8;
+  --layered-status-node-neutral-fill: #747d7f;
+  --layered-status-node-neutral-ring: #747d7f;
+  --layered-status-node-shell: rgba(249, 250, 249, 0.86);
+  --layered-status-connector: rgba(62, 69, 71, 0.68);
+  --layered-status-highlight: rgba(255, 255, 255, 0.58);
+  --layered-status-shadow: 0 8px 12px rgba(4, 12, 16, 0.24);
+  --layered-status-fill: #91c63e;
+  --layered-status-fill-light: #c8ea67;
+  --layered-complete: #71a732;
+  --layered-food: #d99c18;
+  --layered-danger: #b42f24;
+  --layered-motion-fast: 150ms;
+  --layered-motion-panel: 210ms;
+  --layered-ease-settle: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:where(
+  :root[data-theme='dark'][data-page='quick'],
+  :root[data-theme='dark'][data-page='diary']
+) {
+  --layered-art: url('../../assets/tdeetracer-key-visual-night-v1.png');
+  --layered-stage-scrim: rgba(4, 10, 17, 0.52);
+  --layered-stage-overlay: rgba(4, 10, 17, 0.24);
+  --layered-panel-surface: rgba(35, 42, 46, 0.95);
+  --layered-panel-surface-strong: rgba(45, 53, 57, 0.97);
+  --layered-panel-text: #f0f3f2;
+  --layered-panel-muted: #bcc5c5;
+  --layered-panel-line: rgba(225, 234, 233, 0.2);
+  --layered-panel-border: rgba(238, 245, 244, 0.34);
+  --layered-panel-highlight: rgba(255, 255, 255, 0.12);
+  --layered-panel-shadow: 0 24px 48px rgba(0, 0, 0, 0.48);
+  --layered-nav-idle-surface: #687174;
+  --layered-nav-idle-text: #f0f3f2;
+  --layered-circle-neutral-end: #596164;
+  --layered-ribbon-idle: #4b5356;
+  --layered-ribbon-text: #f7f8f7;
+  --layered-control-surface: rgba(17, 24, 28, 0.78);
+  --layered-control-border: rgba(225, 234, 233, 0.24);
+  --layered-control-text: #f0f3f2;
+  --layered-control-placeholder: #a9b4b5;
+  --layered-focus-ring: #b8e8f2;
+  --layered-status-surface: rgba(24, 30, 33, 0.98);
+  --layered-status-track: #090e10;
+  --layered-status-text: #fff;
+  --layered-status-muted: #acb8b9;
+  --layered-status-border: rgba(255, 255, 255, 0.62);
+  --layered-status-meter-border: rgba(255, 255, 255, 0.3);
+  --layered-status-detail-start: #676c6e;
+  --layered-status-detail-end: #3d4244;
+  --layered-status-node-neutral-fill: #687174;
+  --layered-status-node-neutral-ring: rgba(255, 255, 255, 0.72);
+  --layered-status-node-shell: transparent;
+  --layered-status-connector: rgba(255, 255, 255, 0.54);
+  --layered-status-highlight: rgba(255, 255, 255, 0.08);
+  --layered-status-shadow: 0 8px 9px rgba(4, 12, 16, 0.34);
+}

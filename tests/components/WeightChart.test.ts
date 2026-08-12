@@ -34,5 +34,7 @@ describe('WeightChart data', () => {
     expect(data.datasets[1]?.label).toBe('實際體重')
     expect(data.datasets[1]?.data).toEqual([75, null, 72, null, null])
     expect(data.datasets[1]?.spanGaps).toBe(true)
+    expect(data.datasets[0]).not.toHaveProperty('borderColor')
+    expect(data.datasets[1]).not.toHaveProperty('backgroundColor')
   })
 })

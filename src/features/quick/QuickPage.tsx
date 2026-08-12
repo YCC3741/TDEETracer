@@ -12,7 +12,7 @@ import { simulateWeightPath } from '../../domain/projection'
 import type { Profile } from '../../domain/types'
 import { profilesHaveSameSettings } from '../../domain/workspace'
 import { useTour } from '../tour/TourContext'
-import { ProfileForm } from './ProfileForm'
+import { ProfileForm, type QuickFormStep } from './ProfileForm'
 import { QuickResults } from './QuickResults'
 
 interface QuickPageProps {
@@ -30,6 +30,14 @@ export function QuickPage({ onDraftChanged }: QuickPageProps) {
         : null,
     [quickDraft, today],
   )
+  const requestedStep: QuickFormStep | undefined =
+    tour.step?.id === 'quick-profile' || tour.step?.id === 'quick-fields'
+      ? 1
+      : tour.step?.id === 'quick-strategy'
+        ? 2
+        : tour.step?.id === 'quick-submit'
+          ? 3
+          : undefined
 
   const handleSubmit = (nextProfile: Profile) => {
     const savedProfile: Profile = {
@@ -81,31 +89,25 @@ export function QuickPage({ onDraftChanged }: QuickPageProps) {
   }
 
   return (
-    <main className="page-content">
-      <section className="page-hero quick-hero">
-        <div>
-          <span className="eyebrow">Quick calculation</span>
-          <h1>先看見方向 再決定步伐</h1>
-        </div>
-      </section>
+    <main className="page-content quick-page layered-page">
+      <header className="layered-page-heading">
+        <span>Quick route setup</span>
+        <h1>從零開始的旅程</h1>
+      </header>
 
       <div
         className={`quick-workspace${quickDraft && simulation ? ' has-results' : ''}`}
       >
         <section
-          className="card form-card"
+          className="quick-configurator"
+          aria-label="Quick 估算"
           data-tour-anchor="quick-profile-card"
         >
-          <header className="section-head">
-            <div>
-              <span className="eyebrow">Profile & strategy</span>
-              <h2>身體資料與熱量策略</h2>
-            </div>
-          </header>
           <ProfileForm
             key={`${activeUser.id}-${quickDraft ? JSON.stringify(quickDraft) : 'empty-profile'}`}
             profile={quickDraft}
             onSubmit={handleSubmit}
+            {...(requestedStep ? { requestedStep } : {})}
           />
         </section>
 

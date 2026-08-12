@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AppDataState } from '../src/domain/types'
+import { STORAGE_THEME } from '../src/features/theme/themeStorage'
 import {
   createExportData,
   parseImportData,
@@ -15,6 +16,23 @@ import {
 } from './helpers/testData'
 
 describe('JSON import and export', () => {
+  it('keeps the device theme outside workspace exports', () => {
+    const user = makeLocalUser()
+    window.localStorage.setItem(STORAGE_THEME, 'dark')
+    const serialised = serialiseExportData(
+      createExportData({
+        version: 3,
+        activeUserId: user.id,
+        users: [user],
+        notifications: [],
+      }),
+    )
+
+    expect(serialised).not.toContain(STORAGE_THEME)
+    expect(serialised).not.toContain('"theme"')
+    expect(window.localStorage.getItem(STORAGE_THEME)).toBe('dark')
+  })
+
   it('round-trips version three workspace data', () => {
     const plan = makePlan({
       diary: [

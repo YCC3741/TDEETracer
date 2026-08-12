@@ -1,5 +1,7 @@
 import { Dialog } from '@base-ui/react/dialog'
-import { useRef, useState, type FormEvent, type RefObject } from 'react'
+import { useId, useRef, useState, type FormEvent, type RefObject } from 'react'
+import { SaoActionButton } from './sao/SaoActionButton'
+import { SaoDialogPopup } from './sao/SaoDialogPopup'
 
 interface CreateUserDialogProps {
   finalFocus: RefObject<HTMLElement | null>
@@ -13,6 +15,7 @@ export function CreateUserDialog({
   onCreate,
 }: CreateUserDialogProps) {
   const [name, setName] = useState('')
+  const formId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -29,20 +32,34 @@ export function CreateUserDialog({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Backdrop className="confirm-dialog-backdrop" />
-        <Dialog.Viewport className="confirm-dialog-viewport">
-          <Dialog.Popup
+        <Dialog.Backdrop className="confirm-dialog-backdrop sao-dialog-backdrop" />
+        <Dialog.Viewport className="confirm-dialog-viewport sao-dialog-viewport">
+          <SaoDialogPopup
             className="confirm-dialog-popup plan-dialog-popup"
+            eyebrow="Workspace"
             initialFocus={inputRef}
             finalFocus={finalFocus}
+            size="form"
+            title="新增使用者"
+            description="使用者只用於區分這台裝置上的草稿、計畫、日記與成就。"
+            actions={
+              <>
+                <SaoActionButton
+                  disabled={!name.trim()}
+                  form={formId}
+                  label="建立使用者"
+                  tone="primary"
+                  type="submit"
+                />
+                <Dialog.Close
+                  render={
+                    <SaoActionButton label="取消" mark="cancel" tone="cancel" />
+                  }
+                />
+              </>
+            }
           >
-            <Dialog.Title className="confirm-dialog-title">
-              新增使用者
-            </Dialog.Title>
-            <Dialog.Description className="confirm-dialog-description">
-              使用者只用於區分這台裝置上的草稿、計畫、日記與成就。
-            </Dialog.Description>
-            <form className="plan-dialog-form" onSubmit={submit}>
+            <form id={formId} className="plan-dialog-form" onSubmit={submit}>
               <label>
                 使用者名稱
                 <input
@@ -54,20 +71,8 @@ export function CreateUserDialog({
                   placeholder="輸入使用者名稱"
                 />
               </label>
-              <div className="confirm-dialog-actions">
-                <Dialog.Close className="ghost-btn" type="button">
-                  取消
-                </Dialog.Close>
-                <button
-                  className="secondary-btn"
-                  type="submit"
-                  disabled={!name.trim()}
-                >
-                  建立使用者
-                </button>
-              </div>
             </form>
-          </Dialog.Popup>
+          </SaoDialogPopup>
         </Dialog.Viewport>
       </Dialog.Portal>
     </Dialog.Root>

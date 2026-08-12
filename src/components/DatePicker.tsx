@@ -6,6 +6,8 @@ import {
   todayString,
   toDateString,
 } from '../domain/date'
+import { SaoActionButton } from './sao/SaoActionButton'
+import { SaoGlassBands } from './sao/SaoGlassBands'
 
 interface DatePickerProps {
   label: string
@@ -143,80 +145,91 @@ export function DatePicker({ label, value, onValueChange }: DatePickerProps) {
             collisionPadding={10}
           >
             <Popover.Popup
-              className="picker-popup date-picker-popup"
+              className="picker-popup date-picker-popup sao-glass-popover"
               initialFocus={focusedDayRef}
             >
-              <Popover.Arrow className="picker-arrow" />
-              <Popover.Title className="picker-popup-title">
-                選擇日期
-              </Popover.Title>
-              <div className="picker-calendar-head">
-                <button
-                  type="button"
-                  aria-label="上一個月"
-                  onClick={() => changeMonth(-1)}
-                >
-                  <ChevronIcon direction="left" />
-                </button>
-                <strong>
-                  {viewYear} 年 {viewMonth + 1} 月
-                </strong>
-                <button
-                  type="button"
-                  aria-label="下一個月"
-                  onClick={() => changeMonth(1)}
-                >
-                  <ChevronIcon direction="right" />
-                </button>
-              </div>
-              <div
-                className="picker-calendar-grid picker-weekdays"
-                aria-hidden="true"
+              <SaoGlassBands
+                eyebrow="Date picker"
+                heading={<Popover.Title>選擇日期</Popover.Title>}
+                actions={
+                  <>
+                    <SaoActionButton
+                      label="今天"
+                      mark="target"
+                      tone="primary"
+                      onClick={() => selectDate(todayString())}
+                    />
+                    <SaoActionButton
+                      label="清除"
+                      mark="cancel"
+                      tone="cancel"
+                      onClick={() => selectDate('')}
+                    />
+                  </>
+                }
               >
-                {['日', '一', '二', '三', '四', '五', '六'].map((day) => (
-                  <span key={day}>{day}</span>
-                ))}
-              </div>
-              <div className="picker-calendar-grid">
-                {cells.map((day, index) => {
-                  if (!day) {
-                    return <span key={`empty-${index}`} aria-hidden="true" />
-                  }
-                  const date = toDateString(new Date(viewYear, viewMonth, day))
-                  const selected = date === value
-                  const today = date === todayString()
-                  return (
-                    <button
-                      ref={date === focusedDate ? focusedDayRef : undefined}
-                      className={[
-                        'picker-calendar-day',
-                        selected ? 'selected' : '',
-                        today ? 'today' : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')}
-                      type="button"
-                      key={date}
-                      tabIndex={date === focusedDate ? 0 : -1}
-                      aria-label={date.replaceAll('-', '/')}
-                      aria-pressed={selected}
-                      onClick={() => selectDate(date)}
-                      onFocus={() => setFocusedDate(date)}
-                      onKeyDown={handleDayKeyDown}
-                    >
-                      {day}
-                    </button>
-                  )
-                })}
-              </div>
-              <div className="picker-popup-actions">
-                <button type="button" onClick={() => selectDate('')}>
-                  清除
-                </button>
-                <button type="button" onClick={() => selectDate(todayString())}>
-                  今天
-                </button>
-              </div>
+                <div className="picker-calendar-head">
+                  <button
+                    type="button"
+                    aria-label="上一個月"
+                    onClick={() => changeMonth(-1)}
+                  >
+                    <ChevronIcon direction="left" />
+                  </button>
+                  <strong>
+                    {viewYear} 年 {viewMonth + 1} 月
+                  </strong>
+                  <button
+                    type="button"
+                    aria-label="下一個月"
+                    onClick={() => changeMonth(1)}
+                  >
+                    <ChevronIcon direction="right" />
+                  </button>
+                </div>
+                <div
+                  className="picker-calendar-grid picker-weekdays"
+                  aria-hidden="true"
+                >
+                  {['日', '一', '二', '三', '四', '五', '六'].map((day) => (
+                    <span key={day}>{day}</span>
+                  ))}
+                </div>
+                <div className="picker-calendar-grid">
+                  {cells.map((day, index) => {
+                    if (!day) {
+                      return <span key={`empty-${index}`} aria-hidden="true" />
+                    }
+                    const date = toDateString(
+                      new Date(viewYear, viewMonth, day),
+                    )
+                    const selected = date === value
+                    const today = date === todayString()
+                    return (
+                      <button
+                        ref={date === focusedDate ? focusedDayRef : undefined}
+                        className={[
+                          'picker-calendar-day',
+                          selected ? 'selected' : '',
+                          today ? 'today' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        type="button"
+                        key={date}
+                        tabIndex={date === focusedDate ? 0 : -1}
+                        aria-label={date.replaceAll('-', '/')}
+                        aria-pressed={selected}
+                        onClick={() => selectDate(date)}
+                        onFocus={() => setFocusedDate(date)}
+                        onKeyDown={handleDayKeyDown}
+                      >
+                        {day}
+                      </button>
+                    )
+                  })}
+                </div>
+              </SaoGlassBands>
             </Popover.Popup>
           </Popover.Positioner>
         </Popover.Portal>

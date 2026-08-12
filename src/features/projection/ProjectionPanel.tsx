@@ -68,13 +68,17 @@ export function ProjectionPanel({
       : '每月預估'
 
   return (
-    <section className="card projection-card">
+    <section className="card projection-card layered-projection">
       <header className="section-head projection-head">
         <div>
           <span className="eyebrow">{eyebrow}</span>
           <h2>{heading}</h2>
         </div>
-        <div className="panel-tabs" role="tablist" aria-label="預測顯示方式">
+        <div
+          className="panel-tabs layered-ribbon-tabs"
+          role="tablist"
+          aria-label="預測顯示方式"
+        >
           {tabs.map((tab, index) => (
             <button
               key={tab.id}

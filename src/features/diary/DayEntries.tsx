@@ -31,9 +31,10 @@ export function DayEntries({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<EditRecordTarget | null>(null)
   const editTriggerRef = useRef<HTMLElement>(null)
-  const hasRecords =
-    Boolean(day?.entries.length) ||
-    (day?.actualWeightKg !== null && Boolean(day))
+  const recordCount =
+    (day?.entries.length ?? 0) + (day?.actualWeightKg !== null && day ? 1 : 0)
+  const hasRecords = recordCount > 0
+  const isScrollable = recordCount > 5
 
   const confirmDeleteDay = () => {
     setConfirmOpen(false)
@@ -42,7 +43,15 @@ export function DayEntries({
 
   return (
     <>
-      <div className="entry-list">
+      <div
+        className="entry-list"
+        data-scrollable={isScrollable || undefined}
+        role={isScrollable ? 'region' : undefined}
+        tabIndex={isScrollable ? 0 : undefined}
+        aria-label={
+          isScrollable ? `當日紀錄列表，共 ${recordCount} 筆` : undefined
+        }
+      >
         {day?.actualWeightKg !== null && day ? (
           <article className="entry-row weight">
             {readOnly ? (

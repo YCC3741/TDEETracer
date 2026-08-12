@@ -1,6 +1,8 @@
 import { Dialog } from '@base-ui/react/dialog'
-import { useRef, useState, type FormEvent } from 'react'
+import { useId, useRef, useState, type FormEvent } from 'react'
 import type { Profile } from '../domain/types'
+import { SaoActionButton } from './sao/SaoActionButton'
+import { SaoDialogPopup } from './sao/SaoDialogPopup'
 
 interface StartDetailedPlanDialogProps {
   open: boolean
@@ -22,6 +24,7 @@ export function StartDetailedPlanDialog({
   onGoQuick,
 }: StartDetailedPlanDialogProps) {
   const [name, setName] = useState(initialName)
+  const formId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -39,33 +42,54 @@ export function StartDetailedPlanDialog({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Backdrop className="confirm-dialog-backdrop" />
-        <Dialog.Viewport className="confirm-dialog-viewport">
-          <Dialog.Popup
+        <Dialog.Backdrop className="confirm-dialog-backdrop sao-dialog-backdrop" />
+        <Dialog.Viewport className="confirm-dialog-viewport sao-dialog-viewport">
+          <SaoDialogPopup
             className="confirm-dialog-popup plan-dialog-popup"
+            eyebrow="Detailed plan"
             initialFocus={inputRef}
             data-tour-scope
-          >
-            <Dialog.Title className="confirm-dialog-title">
-              開始精確計畫
-            </Dialog.Title>
-            <Dialog.Description
-              className={`confirm-dialog-description${
-                replacesPlanName ? ' plan-dialog-replacement-copy' : ''
-              }`}
-            >
-              {replacesPlanName ? (
-                <>
+            size="form"
+            title="開始精確計畫"
+            description={
+              replacesPlanName ? (
+                <span className="sao-dialog-copy-list">
                   <span>{replacesPlanName}將封存為唯讀</span>
                   <span>新計畫會使用目前試算設定</span>
                   <span>日記從空白開始</span>
-                </>
+                </span>
               ) : (
                 '建立後身體資料、目標與熱量策略會固定；需要變更時請封存並建立新計畫。'
-              )}
-            </Dialog.Description>
+              )
+            }
+            actions={
+              <>
+                {profile ? (
+                  <SaoActionButton
+                    disabled={!name.trim()}
+                    form={formId}
+                    label="建立計畫"
+                    tone="primary"
+                    type="submit"
+                  />
+                ) : (
+                  <SaoActionButton
+                    label="前往 Quick"
+                    tone="primary"
+                    onClick={onGoQuick}
+                  />
+                )}
+                <Dialog.Close
+                  render={
+                    <SaoActionButton label="取消" mark="cancel" tone="cancel" />
+                  }
+                />
+              </>
+            }
+          >
             {profile ? (
               <form
+                id={formId}
                 className="plan-dialog-form"
                 data-tour-anchor="plan-dialog-form"
                 onSubmit={submit}
@@ -91,37 +115,13 @@ export function StartDetailedPlanDialog({
                       : `每日赤字 ${profile.deficit ?? 0} kcal`}
                   </small>
                 </div>
-                <div className="confirm-dialog-actions">
-                  <Dialog.Close className="ghost-btn" type="button">
-                    取消
-                  </Dialog.Close>
-                  <button
-                    className="secondary-btn"
-                    type="submit"
-                    disabled={!name.trim()}
-                  >
-                    建立計畫
-                  </button>
-                </div>
               </form>
             ) : (
               <div className="plan-dialog-empty">
                 <p>請先完成一次有效的 Quick 試算，再建立精確計畫。</p>
-                <div className="confirm-dialog-actions">
-                  <Dialog.Close className="ghost-btn" type="button">
-                    取消
-                  </Dialog.Close>
-                  <button
-                    className="secondary-btn"
-                    type="button"
-                    onClick={onGoQuick}
-                  >
-                    前往 Quick
-                  </button>
-                </div>
               </div>
             )}
-          </Dialog.Popup>
+          </SaoDialogPopup>
         </Dialog.Viewport>
       </Dialog.Portal>
     </Dialog.Root>

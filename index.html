@@ -3,11 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <meta
       name="description"
       content="支援快速估算與每日飲食運動紀錄的 TDEE 體重規劃工具"
     />
     <title>TDEE 體重規劃工具</title>
+    <script>
+      ;(() => {
+        const key = 'tdee_theme_v1'
+        let stored = null
+
+        try {
+          stored = window.localStorage.getItem(key)
+        } catch {
+          stored = null
+        }
+
+        const theme =
+          stored === 'light' || stored === 'dark'
+            ? stored
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light'
+
+        document.documentElement.dataset.theme = theme
+        document.documentElement.style.colorScheme = theme
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
