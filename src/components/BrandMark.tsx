@@ -10,26 +10,48 @@ export function BrandMark({ className }: BrandMarkProps) {
       viewBox="0 0 32 32"
       fill="none"
     >
+      <g data-logo-part="compass">
+        <circle
+          cx="16"
+          cy="16"
+          r="12"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        />
+        <path
+          d="M16 1.5 17.3 4h-2.6ZM30.5 16 28 17.3v-2.6ZM16 30.5 14.7 28h2.6ZM1.5 16 4 14.7v2.6Z"
+          fill="currentColor"
+        />
+      </g>
       <path
-        d="M5 23.5c4.2 0 5.2-6 9.4-6 3.2 0 3.8 2.7 6.8 2.7 2.2 0 3.6-1.4 5.8-4.2"
+        data-logo-part="route"
+        d="M12.8 20.7c2.7-1 1.7-3.8 4.4-6.1l1.6-1.4"
         stroke="currentColor"
         strokeLinecap="round"
-        strokeWidth="2.2"
+        strokeLinejoin="round"
+        strokeWidth="2.4"
       />
-      <circle
-        cx="14.4"
-        cy="17.5"
-        r="3.1"
-        fill="var(--surface)"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path
-        d="M22.5 13.6V9.8a3.7 3.7 0 0 1 7.4 0v3.8M21.2 13.6h10"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
+      <g data-logo-part="start">
+        <circle
+          cx="9.5"
+          cy="22.2"
+          r="4.7"
+          fill="var(--surface)"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <circle cx="9.5" cy="22.2" r="2" fill="currentColor" />
+      </g>
+      <g data-logo-part="goal">
+        <path
+          d="m21 6.2 4.8 4.8-4.8 4.8-4.8-4.8Z"
+          fill="var(--surface)"
+          stroke="currentColor"
+          strokeLinejoin="round"
+          strokeWidth="2"
+        />
+        <path d="m21 8.6 2.4 2.4-2.4 2.4-2.4-2.4Z" fill="currentColor" />
+      </g>
     </svg>
   )
 }

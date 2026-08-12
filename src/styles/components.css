@@ -59,7 +59,7 @@
   width: 32px;
   height: 32px;
   flex: 0 0 32px;
-  color: var(--route);
+  color: var(--ink);
 }
 
 .app-brand > span {
