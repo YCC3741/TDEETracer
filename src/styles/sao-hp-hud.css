@@ -6,7 +6,7 @@
   --sao-hp-ink: #fff;
   --sao-hp-depleted: #ff9b8d;
   --sao-hp-safe: #84de1c;
-  --sao-hp-caution: #e5c31d;
+  --sao-hp-caution: var(--layered-nav-active-surface);
   --sao-hp-critical: #d8402c;
   --sao-hp-glow: rgba(255, 255, 60, 0.81);
   --sao-hp-outline-light: #fff;
