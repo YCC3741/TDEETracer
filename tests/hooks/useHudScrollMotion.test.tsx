@@ -49,7 +49,7 @@ describe('HUD scroll motion', () => {
     expect(root.dataset.hudRetracted).toBe('false')
   })
 
-  it('trails the scroll and then settles the offset back home', () => {
+  it('ramps into the trailing offset instead of jumping on one wheel notch', () => {
     vi.useFakeTimers()
     render(<Harness />)
 
@@ -57,10 +57,21 @@ describe('HUD scroll motion', () => {
     act(() => {
       vi.advanceTimersByTime(20)
     })
-    const trailing = Number.parseFloat(lag())
-    expect(trailing).toBeGreaterThan(0)
-    expect(trailing).toBeLessThanOrEqual(24)
+    const firstFrame = Number.parseFloat(lag())
+    expect(firstFrame).toBeGreaterThan(0)
+    expect(firstFrame).toBeLessThan(6)
 
+    act(() => {
+      vi.advanceTimersByTime(80)
+    })
+    expect(Number.parseFloat(lag())).toBeGreaterThan(firstFrame)
+  })
+
+  it('settles the offset back home once scrolling stops', () => {
+    vi.useFakeTimers()
+    render(<Harness />)
+
+    act(() => scrollTo(400))
     act(() => {
       vi.advanceTimersByTime(3000)
     })
