@@ -80,10 +80,10 @@ describe('TDEE calculations', () => {
 
   it('maps remaining intake to the depleting bar stages', () => {
     expect(intakeStage(1)).toBe('safe')
-    expect(intakeStage(0.26)).toBe('safe')
-    expect(intakeStage(0.25)).toBe('caution')
-    expect(intakeStage(0.13)).toBe('caution')
-    expect(intakeStage(0.125)).toBe('critical')
+    expect(intakeStage(0.51)).toBe('safe')
+    expect(intakeStage(0.5)).toBe('caution')
+    expect(intakeStage(0.21)).toBe('caution')
+    expect(intakeStage(0.2)).toBe('critical')
     expect(intakeStage(0)).toBe('critical')
   })
 

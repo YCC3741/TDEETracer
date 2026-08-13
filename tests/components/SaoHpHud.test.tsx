@@ -7,21 +7,21 @@ describe('SAO HP HUD', () => {
   it('reads the intake rail as remaining allowance beside the selected date', () => {
     const { container } = render(
       <SaoHpHud
-        intake={buildGauge(420, 1500)}
+        intake={buildGauge(900, 1500)}
         activity={buildGauge(320, 525)}
         dateLabel="08 / 13"
       />,
     )
 
     expect(
-      screen.getByRole('img', { name: '飲食剩餘 420 大卡，上限 1500 大卡' }),
+      screen.getByRole('img', { name: '飲食剩餘 900 大卡，上限 1500 大卡' }),
     ).toHaveAttribute('data-stage', 'safe')
     expect(
       screen.getByRole('img', {
         name: '運動消耗 320 大卡，活動量目標 525 大卡',
       }),
     ).toBeInTheDocument()
-    expect(container).toHaveTextContent('420 / 1500 kcal')
+    expect(container).toHaveTextContent('900 / 1500 kcal')
     expect(container).toHaveTextContent('08 / 13')
     expect(container).toHaveTextContent('320 / 525 kcal')
   })
@@ -48,13 +48,13 @@ describe('SAO HP HUD', () => {
   it('warns through the caution stage before the allowance runs out', () => {
     render(
       <SaoHpHud
-        intake={buildGauge(225, 1500)}
+        intake={buildGauge(450, 1500)}
         activity={buildGauge(0, 525)}
         dateLabel="08 / 13"
       />,
     )
 
-    expect(screen.getByRole('img', { name: /飲食剩餘 225/ })).toHaveAttribute(
+    expect(screen.getByRole('img', { name: /飲食剩餘 450/ })).toHaveAttribute(
       'data-stage',
       'caution',
     )

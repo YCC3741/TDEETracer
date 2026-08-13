@@ -63,8 +63,8 @@ export function buildGauge(value: number, max: number): RouteGauge {
 }
 
 export function intakeStage(ratio: number): GaugeStage {
-  if (ratio > 0.25) return 'safe'
-  if (ratio > 0.125) return 'caution'
+  if (ratio > 0.5) return 'safe'
+  if (ratio > 0.2) return 'caution'
   return 'critical'
 }
 
