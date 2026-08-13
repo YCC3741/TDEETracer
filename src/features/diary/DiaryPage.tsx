@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppData } from '../../app/AppDataContext'
 import { LayeredStatus } from '../../components/layered/LayeredStatus'
+import { SaoHpHud } from '../../components/sao/SaoHpHud'
 import {
+  activityAllowance,
+  buildGauge,
+  calculateBmr,
+  calculateTdee,
+  dayTotals,
+  intakeAllowance,
   isCheckedIn,
   isProfileReady,
   longestCheckinStreak,
@@ -89,6 +96,24 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
   const weeklyCheckins = diary.filter(
     (day) => visibleWeek.has(day.date) && isCheckedIn(day),
   ).length
+
+  const hudWeight = exerciseWeight
+  const hudGauges = useMemo(() => {
+    if (!isProfileReady(profile) || hudWeight === null) return null
+    const tdee = calculateTdee(profile, hudWeight)
+    const bmr = calculateBmr(
+      hudWeight,
+      profile.height,
+      profile.age,
+      profile.sex,
+    )
+    const allowance = intakeAllowance(profile, tdee)
+    const totals = dayTotals(selectedDay)
+    return {
+      intake: buildGauge(allowance - totals.intake, allowance),
+      activity: buildGauge(totals.burn, activityAllowance(bmr, profile.factor)),
+    }
+  }, [hudWeight, profile, selectedDay])
 
   useEffect(() => {
     if (isProfileReady(profile) || warnedNoProfile.current) return
@@ -271,11 +296,22 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
   }
 
   return (
-    <main className="page-content diary-page">
+    <main
+      className="page-content diary-page"
+      data-hud={hudGauges ? 'sao' : undefined}
+    >
       <header className="layered-page-heading">
         <span>Daily route log</span>
         <h1>為美好生活獻上祝福</h1>
       </header>
+
+      {hudGauges ? (
+        <SaoHpHud
+          intake={hudGauges.intake}
+          activity={hudGauges.activity}
+          dateLabel={selectedDate.slice(5).replace('-', ' / ')}
+        />
+      ) : null}
 
       {readOnly ? (
         <div className="archive-banner" role="status">

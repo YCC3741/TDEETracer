@@ -190,7 +190,7 @@ export function ProfileForm({
       onSubmit={submit}
     >
       <aside
-        className="quick-draft-summary layered-window"
+        className="quick-draft-summary layered-window layered-panel-shell"
         role="region"
         aria-label="Quick 旅程摘要"
       >
@@ -267,7 +267,7 @@ export function ProfileForm({
       </LayeredBranchBar>
 
       <div
-        className="quick-detail-window layered-window"
+        className="quick-detail-window layered-window layered-panel-shell"
         key={`quick-detail-window-${activeStep}`}
       >
         {error ? (

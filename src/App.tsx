@@ -18,6 +18,7 @@ import { profilesHaveSameSettings } from './domain/workspace'
 import { DetailedPlanPage } from './features/diary/DetailedPlanPage'
 import { HomePage } from './features/home/HomePage'
 import { QuickPage } from './features/quick/QuickPage'
+import { useHudScrollMotion } from './hooks/useHudScrollMotion'
 import { useTour } from './features/tour/TourContext'
 import { TourOverlay } from './features/tour/TourOverlay'
 import { TourWelcomeDialog } from './features/tour/TourWelcomeDialog'
@@ -38,6 +39,7 @@ function initialPage(
 
 export function App() {
   const tour = useTour()
+  useHudScrollMotion()
   const {
     prefMode,
     setPreferredMode,

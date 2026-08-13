@@ -180,7 +180,7 @@ export function DiaryEditor({
       >
         <div className="diary-editor-stage-clip">
           <section
-            className="card diary-editor layered-window"
+            className="card diary-editor layered-window layered-panel-shell"
             data-animated-panel={(editorOpen && !readOnly) || undefined}
             data-direct-entry={directEntry || undefined}
             data-editor-destination={activeDestination}

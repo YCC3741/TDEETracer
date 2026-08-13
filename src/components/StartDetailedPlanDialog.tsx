@@ -1,8 +1,37 @@
 import { Dialog } from '@base-ui/react/dialog'
-import { useId, useRef, useState, type FormEvent } from 'react'
+import { useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import type { Profile } from '../domain/types'
 import { SaoActionButton } from './sao/SaoActionButton'
 import { SaoDialogPopup } from './sao/SaoDialogPopup'
+
+const PLAN_LOCK_NOTICE =
+  '建立後身體資料、目標與熱量策略會固定；需要變更時請封存並建立新計畫。'
+
+function planDescription(
+  profile: Profile | null,
+  replacesPlanName?: string,
+): ReactNode {
+  if (!profile) {
+    return (
+      <span className="sao-dialog-copy-list">
+        <span>請先完成一次有效的 Quick 試算，再建立精確計畫。</span>
+        <span>{PLAN_LOCK_NOTICE}</span>
+      </span>
+    )
+  }
+
+  if (replacesPlanName) {
+    return (
+      <span className="sao-dialog-copy-list">
+        <span>{replacesPlanName}將封存為唯讀</span>
+        <span>新計畫會使用目前試算設定</span>
+        <span>日記從空白開始</span>
+      </span>
+    )
+  }
+
+  return PLAN_LOCK_NOTICE
+}
 
 interface StartDetailedPlanDialogProps {
   open: boolean
@@ -51,17 +80,7 @@ export function StartDetailedPlanDialog({
             data-tour-scope
             size="form"
             title="開始精確計畫"
-            description={
-              replacesPlanName ? (
-                <span className="sao-dialog-copy-list">
-                  <span>{replacesPlanName}將封存為唯讀</span>
-                  <span>新計畫會使用目前試算設定</span>
-                  <span>日記從空白開始</span>
-                </span>
-              ) : (
-                '建立後身體資料、目標與熱量策略會固定；需要變更時請封存並建立新計畫。'
-              )
-            }
+            description={planDescription(profile, replacesPlanName)}
             actions={
               <>
                 {profile ? (
@@ -87,7 +106,7 @@ export function StartDetailedPlanDialog({
               </>
             }
           >
-            {profile ? (
+            {profile === null ? null : (
               <form
                 id={formId}
                 className="plan-dialog-form"
@@ -116,10 +135,6 @@ export function StartDetailedPlanDialog({
                   </small>
                 </div>
               </form>
-            ) : (
-              <div className="plan-dialog-empty">
-                <p>請先完成一次有效的 Quick 試算，再建立精確計畫。</p>
-              </div>
             )}
           </SaoDialogPopup>
         </Dialog.Viewport>

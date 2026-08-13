@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
   actualDeficit,
+  activityAllowance,
+  buildGauge,
   calculateBmr,
   calculateTdee,
   estimateExerciseCalories,
+  intakeAllowance,
+  intakeStage,
   longestCheckinStreak,
   plannedDeficit,
   uniqueCheckinDays,
@@ -49,6 +53,38 @@ describe('TDEE calculations', () => {
   it('combines actual food and exercise correctly', () => {
     expect(actualDeficit(2000, 1700, 260)).toBe(560)
     expect(estimateExerciseCalories(3.5, 30, 75)).toBeCloseTo(131.25)
+  })
+
+  it('reads the daily intake allowance from the active plan mode', () => {
+    expect(intakeAllowance(profile, expectedFemaleTdee)).toBe(1500)
+    expect(
+      intakeAllowance(
+        { ...profile, mode: 'deficit', intake: null, deficit: 500 },
+        2000,
+      ),
+    ).toBe(1500)
+  })
+
+  it('derives the activity allowance from the declared activity level', () => {
+    expect(activityAllowance(1400, 1.375)).toBeCloseTo(525)
+    expect(activityAllowance(1400, 1.2)).toBeCloseTo(280)
+    expect(activityAllowance(1400, 1)).toBe(0)
+  })
+
+  it('clamps gauge ratios while keeping the reported figure intact', () => {
+    expect(buildGauge(420, 1500).ratio).toBeCloseTo(0.28)
+    expect(buildGauge(-220, 1500)).toEqual({ value: -220, max: 1500, ratio: 0 })
+    expect(buildGauge(620, 500).ratio).toBe(1)
+    expect(buildGauge(100, 0)).toEqual({ value: 100, max: 0, ratio: 0 })
+  })
+
+  it('maps remaining intake to the depleting bar stages', () => {
+    expect(intakeStage(1)).toBe('safe')
+    expect(intakeStage(0.2)).toBe('safe')
+    expect(intakeStage(0.19)).toBe('caution')
+    expect(intakeStage(0.1)).toBe('caution')
+    expect(intakeStage(0.09)).toBe('critical')
+    expect(intakeStage(0)).toBe('critical')
   })
 
   it('finds the longest consecutive run of checked-in calendar dates', () => {

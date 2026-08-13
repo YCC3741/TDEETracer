@@ -35,6 +35,9 @@ describe('panel tab keyboard navigation', () => {
     const summaryTab = screen.getByRole('tab', { name: '預估減重路程' })
     const chartTab = screen.getByRole('tab', { name: '體重曲線' })
     const tableTab = screen.getByRole('tab', { name: '每月預估' })
+    expect(summaryTab.closest('.projection-card')).toHaveClass(
+      'layered-panel-shell',
+    )
 
     summaryTab.focus()
     await user.keyboard('{ArrowRight}')

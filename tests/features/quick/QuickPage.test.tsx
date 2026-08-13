@@ -135,6 +135,10 @@ describe('QuickPage interactions', () => {
     const firstDetailWindow = container.querySelector('.quick-detail-window')
 
     expect(form).toHaveAttribute('data-active-step', '1')
+    expect(screen.getByRole('region', { name: 'Quick 旅程摘要' })).toHaveClass(
+      'layered-panel-shell',
+    )
+    expect(firstDetailWindow).toHaveClass('layered-panel-shell')
     expect(
       screen.getByRole('heading', { name: '1. 身體資料' }),
     ).toBeInTheDocument()
@@ -203,6 +207,7 @@ describe('QuickPage interactions', () => {
     const primaryResult = screen.getByRole('region', {
       name: 'Quick 主要結果',
     })
+    expect(primaryResult).toHaveClass('layered-panel-shell')
     expect(within(primaryResult).getByText('每日建議攝取')).toBeInTheDocument()
     expect(within(primaryResult).getByText('1,500 kcal')).toBeInTheDocument()
     const routeEta = within(primaryResult).getByText('預估抵達').parentElement

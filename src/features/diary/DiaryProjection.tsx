@@ -33,7 +33,7 @@ export function DiaryProjection({
 }: DiaryProjectionProps) {
   if (!isProfileReady(profile)) {
     return (
-      <section className="card empty-projection">
+      <section className="card empty-projection layered-panel-shell">
         <span className="route-section-label">追蹤預測</span>
         <h2>尚未建立體重計畫</h2>
         <p>請先切換至「快速計算」，儲存個人資料與熱量策略。</p>

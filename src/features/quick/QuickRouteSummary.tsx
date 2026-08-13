@@ -33,7 +33,10 @@ export function QuickRouteSummary({
       : `模擬上限內尚未到達目標，最終約 ${simulation.finalWeight.toFixed(1)} kg`
 
   return (
-    <section className="quick-result-summary" aria-label="Quick 主要結果">
+    <section
+      className="quick-result-summary layered-panel-shell"
+      aria-label="Quick 主要結果"
+    >
       <header>
         <h2>{simulation.reached ? '你的預估路徑' : '目前路徑需要調整'}</h2>
       </header>

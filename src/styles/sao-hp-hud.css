@@ -1,0 +1,196 @@
+:root {
+  /* Day: the upstream white plate disappears over the bright key visual. */
+  --sao-hp-plate: 26, 36, 40;
+  --sao-hp-plate-head: 0.5;
+  --sao-hp-plate-tail: 0.12;
+  --sao-hp-ink: #fff;
+  --sao-hp-depleted: #ff9b8d;
+  --sao-hp-safe: #84de1c;
+  --sao-hp-caution: #e5c31d;
+  --sao-hp-critical: #d8402c;
+  --sao-hp-glow: rgba(255, 255, 60, 0.81);
+  --sao-hp-outline-light: #fff;
+  --sao-hp-outline-dark: #565653;
+  --sao-hp-badge: #f3f315;
+  --sao-hp-badge-mark: #2b2b06;
+}
+
+:root[data-theme='dark'] {
+  --sao-hp-plate: 255, 255, 255;
+  --sao-hp-plate-head: 0.4;
+  --sao-hp-plate-tail: 0.06;
+}
+
+.sao-hp-hud {
+  position: fixed;
+  top: calc(var(--header-height) + 16px);
+  left: 22px;
+  z-index: 80;
+  display: grid;
+  width: min(430px, calc(100vw - 44px));
+  gap: 2px;
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root[data-hud-retracted='true'] .sao-hp-hud {
+  opacity: 0;
+  transform: translateX(-116%);
+}
+
+.sao-hp-rail {
+  display: block;
+  overflow: visible;
+  width: 100%;
+  height: auto;
+}
+
+/* The floating HUD shares the top-left corner with the page heading. */
+@media (min-width: 701px) {
+  .diary-page[data-hud='sao'] > .layered-page-heading {
+    margin-top: 126px;
+  }
+}
+
+.sao-hp-plate-head {
+  stop-color: rgb(var(--sao-hp-plate));
+  stop-opacity: var(--sao-hp-plate-head);
+}
+
+.sao-hp-plate-tail {
+  stop-color: rgb(var(--sao-hp-plate));
+  stop-opacity: var(--sao-hp-plate-tail);
+}
+
+.sao-hp-shade-strong {
+  stop-color: #000;
+  stop-opacity: 0.1;
+}
+
+.sao-hp-shade-soft {
+  stop-color: #000;
+  stop-opacity: 0.09;
+}
+
+.sao-hp-shade-clear {
+  stop-color: #000;
+  stop-opacity: 0;
+}
+
+.sao-hp-fill {
+  fill: var(--sao-hp-safe);
+}
+
+.sao-hp-rail[data-stage='caution'] .sao-hp-fill {
+  fill: var(--sao-hp-caution);
+}
+
+.sao-hp-rail[data-stage='critical'] .sao-hp-fill {
+  fill: var(--sao-hp-critical);
+}
+
+.sao-hp-outline-glow,
+.sao-hp-outline-light,
+.sao-hp-outline-dark {
+  fill: none;
+}
+
+.sao-hp-outline-glow {
+  stroke: var(--sao-hp-glow);
+  stroke-width: 2.7;
+  stroke-linejoin: round;
+}
+
+.sao-hp-outline-light {
+  stroke: var(--sao-hp-outline-light);
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+}
+
+.sao-hp-outline-dark {
+  stroke: var(--sao-hp-outline-dark);
+  stroke-width: 2.3;
+  stroke-miterlimit: 10;
+}
+
+.sao-hp-badge {
+  fill: var(--sao-hp-badge);
+}
+
+.sao-hp-badge-mark {
+  fill: var(--sao-hp-badge-mark);
+}
+
+.sao-hp-label,
+.sao-hp-window {
+  fill: var(--sao-hp-ink);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.sao-hp-label {
+  font-family: var(--font-ui);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.sao-hp-window {
+  font-family: var(--font-compact);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.sao-hp-window[data-depleted='true'] {
+  fill: var(--sao-hp-depleted);
+}
+
+.floating-route-hud {
+  transform: translateY(var(--hud-scroll-lag, 0px));
+}
+
+@media (max-width: 700px) {
+  .sao-hp-hud,
+  :root[data-hud-retracted='true'] .sao-hp-hud {
+    position: static;
+    width: 100%;
+    margin: 0 0 18px;
+    opacity: 1;
+    transform: none;
+  }
+
+  .floating-route-hud {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sao-hp-hud,
+  .floating-route-hud {
+    transition: none;
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .sao-hp-fill {
+    fill: Highlight;
+  }
+
+  .sao-hp-outline-glow {
+    display: none;
+  }
+
+  .sao-hp-outline-light,
+  .sao-hp-outline-dark {
+    stroke: CanvasText;
+  }
+
+  .sao-hp-label,
+  .sao-hp-window {
+    fill: CanvasText;
+    filter: none;
+  }
+}

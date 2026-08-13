@@ -12,6 +12,15 @@
   --layered-panel-border: rgba(255, 255, 255, 0.7);
   --layered-panel-highlight: rgba(255, 255, 255, 0.86);
   --layered-panel-shadow: 0 22px 42px rgba(4, 12, 16, 0.34);
+  --layered-panel-blur: 16px;
+  --layered-panel-shell-border: rgba(91, 100, 104, 0.2);
+  --layered-panel-soft-shadow:
+    0 0 12px rgba(62, 70, 74, 0.34), 0 6px 16px rgba(4, 12, 16, 0.12);
+  --layered-panel-polygon-contour: drop-shadow(
+    0 0 1.5px rgba(91, 100, 104, 0.28)
+  );
+  --layered-panel-drop-shadow: drop-shadow(0 0 10px rgba(62, 70, 74, 0.4))
+    drop-shadow(0 6px 14px rgba(4, 12, 16, 0.14));
   --layered-nav-idle-surface: #c8cccb;
   --layered-nav-idle-text: #4b5153;
   --layered-nav-active-surface: #f4b400;
@@ -67,6 +76,14 @@
   --layered-panel-border: rgba(238, 245, 244, 0.34);
   --layered-panel-highlight: rgba(255, 255, 255, 0.12);
   --layered-panel-shadow: 0 24px 48px rgba(0, 0, 0, 0.48);
+  --layered-panel-shell-border: rgba(190, 199, 201, 0.18);
+  --layered-panel-soft-shadow:
+    0 0 12px rgba(190, 199, 201, 0.18), 0 7px 18px rgba(0, 0, 0, 0.24);
+  --layered-panel-polygon-contour: drop-shadow(
+    0 0 1.5px rgba(190, 199, 201, 0.22)
+  );
+  --layered-panel-drop-shadow: drop-shadow(0 0 10px rgba(190, 199, 201, 0.26))
+    drop-shadow(0 7px 16px rgba(0, 0, 0, 0.26));
   --layered-nav-idle-surface: #687174;
   --layered-nav-idle-text: #f0f3f2;
   --layered-circle-neutral-end: #596164;

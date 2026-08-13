@@ -68,7 +68,7 @@ export function ProjectionPanel({
       : '每月預估'
 
   return (
-    <section className="card projection-card layered-projection">
+    <section className="card projection-card layered-projection layered-panel-shell">
       <header className="section-head projection-head">
         <div>
           <span className="eyebrow">{eyebrow}</span>

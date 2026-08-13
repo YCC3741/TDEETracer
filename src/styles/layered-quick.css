@@ -359,11 +359,8 @@
 
 :root[data-page='quick'] .quick-result-summary,
 :root[data-page='quick'] .results > .projection-card {
-  border: 1px solid var(--layered-panel-border);
   color: var(--layered-panel-text);
   background: var(--layered-panel-surface);
-  box-shadow: var(--layered-panel-shadow);
-  backdrop-filter: blur(14px);
 }
 
 :root[data-page='quick'] .quick-result-summary {
@@ -383,7 +380,8 @@
       calc(100% - 20px) 100%,
       0 100%
     );
-    filter: drop-shadow(var(--layered-panel-shadow));
+    filter: var(--layered-panel-polygon-contour)
+      var(--layered-panel-drop-shadow);
   }
 }
 
@@ -400,7 +398,8 @@
       0 calc(var(--quick-detail-pointer-top) + 15px),
       18px var(--quick-detail-pointer-top)
     );
-    filter: drop-shadow(var(--layered-panel-shadow));
+    filter: var(--layered-panel-polygon-contour)
+      var(--layered-panel-drop-shadow);
     animation-name: quick-detail-panel-unfold;
   }
 }

@@ -80,61 +80,6 @@
   min-width: 0;
 }
 
-:root[data-page='diary'] .date-rail-telemetry {
-  display: flex;
-  margin-top: 9px;
-  align-items: stretch;
-  gap: 7px;
-}
-
-:root[data-page='diary'] .date-rail-telemetry-item {
-  position: relative;
-  display: flex;
-  min-height: 32px;
-  min-width: 142px;
-  padding: 6px 11px 6px 13px;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--telemetry-accent) 9%, transparent),
-    transparent 78%
-  );
-}
-
-:root[data-page='diary'] .date-rail-telemetry-item::before {
-  position: absolute;
-  top: 5px;
-  bottom: 5px;
-  left: 0;
-  width: 2px;
-  content: '';
-  background: var(--telemetry-accent);
-}
-
-:root[data-page='diary'] .date-rail-telemetry-item.food {
-  --telemetry-accent: var(--layered-food);
-}
-
-:root[data-page='diary'] .date-rail-telemetry-item.exercise {
-  --telemetry-accent: var(--layered-complete);
-}
-
-:root[data-page='diary'] .date-rail-telemetry-item > span {
-  color: var(--layered-panel-muted);
-  font-family: var(--font-compact);
-  font-size: 0.6rem;
-  font-weight: 760;
-  letter-spacing: 0.05em;
-}
-
-:root[data-page='diary'] .date-rail-telemetry-item > strong {
-  color: var(--telemetry-accent);
-  font-size: 0.7rem;
-  white-space: nowrap;
-}
-
 .date-today-marker {
   position: absolute;
   top: 5px;
@@ -307,7 +252,8 @@
       0 calc(var(--diary-editor-pointer-top) + 15px),
       18px var(--diary-editor-pointer-top)
     );
-    filter: drop-shadow(var(--layered-panel-shadow));
+    filter: var(--layered-panel-polygon-contour)
+      var(--layered-panel-drop-shadow);
     transition: clip-path var(--layered-motion-panel) var(--layered-ease-settle);
   }
 
@@ -696,12 +642,9 @@
 
 :root[data-page='diary'] .detail-projection > .card,
 :root[data-page='diary'] .empty-projection {
-  border-color: var(--layered-panel-border);
   border-radius: 0;
   color: var(--layered-panel-text);
   background: var(--layered-panel-surface);
-  box-shadow: var(--layered-panel-shadow);
-  backdrop-filter: blur(14px);
 }
 
 :root[data-page='diary'] .editor-entries-panel .entry-list {
@@ -948,10 +891,6 @@
 }
 
 @media (max-width: 700px) {
-  :root[data-page='diary'] .date-rail-telemetry {
-    flex-wrap: wrap;
-  }
-
   :root[data-page='diary'] .diary-page > .weekly-progress-hud {
     position: static;
     width: 100%;
@@ -996,11 +935,6 @@
 }
 
 @media (max-width: 430px) {
-  :root[data-page='diary'] .date-rail-telemetry-item {
-    width: 100%;
-    min-width: 0;
-  }
-
   :root[data-page='diary'] .diary-editor-layout,
   :root[data-page='diary'] .diary-editor-layout[data-rail-expanded='true'] {
     min-height: 60px;
@@ -1133,16 +1067,6 @@
 }
 
 @media (forced-colors: active), (prefers-contrast: more) {
-  :root[data-page='diary'] .date-rail-telemetry-item {
-    border: 1px solid CanvasText;
-    color: CanvasText;
-    background: Canvas;
-  }
-
-  :root[data-page='diary'] .date-rail-telemetry-item::before {
-    display: none;
-  }
-
   :root[data-page='diary']
     .diary-editor-layout[data-rail-expanded='true']
     .diary-editor-stage-clip {

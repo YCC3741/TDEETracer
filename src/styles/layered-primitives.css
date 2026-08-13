@@ -55,17 +55,18 @@
   );
 }
 
-.layered-window {
+.layered-window,
+.layered-panel-shell {
   position: relative;
-  border: 1px solid var(--layered-panel-border);
+  border: 1px solid var(--layered-panel-shell-border);
   color: var(--layered-panel-text);
   background:
     linear-gradient(105deg, var(--layered-panel-highlight), transparent 34%),
     var(--layered-panel-surface);
   box-shadow:
-    var(--layered-panel-shadow),
+    var(--layered-panel-soft-shadow),
     inset 0 1px 0 var(--layered-panel-highlight);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(var(--layered-panel-blur));
 }
 
 .layered-window-label {
@@ -297,7 +298,8 @@
 }
 
 @supports not (backdrop-filter: blur(1px)) {
-  .layered-window {
+  .layered-window,
+  .layered-panel-shell {
     background: var(--layered-panel-surface-strong);
   }
 }
@@ -338,12 +340,14 @@
   }
 
   .layered-window,
+  .layered-panel-shell,
   .layered-status-main,
   .layered-status-detail {
     border: 2px solid CanvasText;
     color: CanvasText;
     background: Canvas;
     box-shadow: none;
+    filter: none;
     backdrop-filter: none;
   }
 

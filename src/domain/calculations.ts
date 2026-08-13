@@ -1,4 +1,12 @@
-import type { DiaryDay, PlanMode, Profile, Sex, WarningMessage } from './types'
+import type {
+  DiaryDay,
+  GaugeStage,
+  PlanMode,
+  Profile,
+  RouteGauge,
+  Sex,
+  WarningMessage,
+} from './types'
 import { addDays, parseLocalDate, toDateString } from './date'
 
 export function calculateBmr(
@@ -34,6 +42,30 @@ export function actualDeficit(
   burn: number,
 ): number {
   return tdee + burn - intake
+}
+
+export function intakeAllowance(profile: Profile, tdee: number): number {
+  return tdee - plannedDeficit(profile, tdee, profile.mode)
+}
+
+/** The activity share of the TDEE, i.e. everything above the resting rate. */
+export function activityAllowance(bmr: number, factor: number): number {
+  return bmr * (factor - 1)
+}
+
+export function buildGauge(value: number, max: number): RouteGauge {
+  const safeMax = Math.max(0, max)
+  return {
+    value,
+    max: safeMax,
+    ratio: safeMax === 0 ? 0 : Math.min(Math.max(value / safeMax, 0), 1),
+  }
+}
+
+export function intakeStage(ratio: number): GaugeStage {
+  if (ratio >= 0.2) return 'safe'
+  if (ratio >= 0.1) return 'caution'
+  return 'critical'
 }
 
 export function estimateExerciseCalories(

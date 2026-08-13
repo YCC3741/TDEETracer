@@ -57,6 +57,14 @@ export interface ActualDay {
   burn: number
 }
 
+export type GaugeStage = 'safe' | 'caution' | 'critical'
+
+export interface RouteGauge {
+  value: number
+  max: number
+  ratio: number
+}
+
 export type ActualsByDate = Record<string, ActualDay>
 
 export interface SimulationDayMeta {

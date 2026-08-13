@@ -111,7 +111,21 @@ describe('DiaryPage date and entry interactions', () => {
     expect(
       within(rail).getByRole('button', { name: /選擇 2026\/08\/05/ }),
     ).toHaveAttribute('aria-current', 'date')
-    expect(container.querySelector('.diary-date-rail')).toBeInTheDocument()
+    expect(container.querySelector('.diary-date-rail')).toHaveClass(
+      'layered-panel-shell',
+    )
+  })
+
+  it('hides the calorie HUD until the plan profile is usable', () => {
+    const storage = new TestStorage({
+      [STORAGE_DIARY]: JSON.stringify([]),
+    })
+    const { container } = renderDiary(storage)
+
+    expect(container.querySelector('.sao-hp-hud')).not.toBeInTheDocument()
+    expect(container.querySelector('.diary-page')).not.toHaveAttribute(
+      'data-hud',
+    )
   })
 
   it('keeps five editor destinations visible and opens their content', async () => {
@@ -121,6 +135,7 @@ describe('DiaryPage date and entry interactions', () => {
     let editor = container.querySelector<HTMLElement>('.diary-editor')
 
     expect(dashboard).toContainElement(editor)
+    expect(editor).toHaveClass('layered-panel-shell')
     expect(
       container.querySelector('.diary-overview-card'),
     ).not.toBeInTheDocument()
@@ -173,10 +188,17 @@ describe('DiaryPage date and entry interactions', () => {
     expect(
       screen.queryByRole('heading', { name: '新增今日紀錄' }),
     ).not.toBeInTheDocument()
-    const dateRailSummary = container.querySelector('.date-rail-summary')
-    expect(dateRailSummary).toHaveTextContent('飲食攝取+0 kcal')
-    expect(dateRailSummary).toHaveTextContent('運動消耗−0 kcal')
-    expect(dateRailSummary?.parentElement).toHaveClass('date-rail-copy')
+    expect(
+      container.querySelector('.date-rail-summary'),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: '飲食剩餘 1500 大卡，上限 1500 大卡' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', {
+        name: '運動消耗 0 大卡，活動量目標 563 大卡',
+      }),
+    ).toBeInTheDocument()
     const weeklyProgress = screen.getByRole('progressbar', {
       name: '本週簽到進度',
     })
@@ -655,10 +677,9 @@ describe('DiaryPage date and entry interactions', () => {
         },
       ],
     })
-    expect(screen.getAllByText('+450 kcal')).toHaveLength(1)
     expect(
-      container.querySelector('.date-rail-summary')?.children,
-    ).toHaveLength(2)
+      screen.getByRole('img', { name: '飲食剩餘 1050 大卡，上限 1500 大卡' }),
+    ).toBeInTheDocument()
     expect(screen.queryByText('選擇日期')).not.toBeInTheDocument()
     expect(screen.queryByText('紀錄類型')).not.toBeInTheDocument()
     expect(
@@ -675,8 +696,7 @@ describe('DiaryPage date and entry interactions', () => {
     await user.click(
       screen.getByRole('button', { name: '查看當日紀錄，共 1 筆' }),
     )
-    expect(screen.getAllByText('+450 kcal')).toHaveLength(2)
-    expect(container.querySelector('.date-rail-summary')).toBeInTheDocument()
+    expect(screen.getAllByText('+450 kcal')).toHaveLength(1)
     expect(
       container.querySelector('.diary-editor .day-summary'),
     ).not.toBeInTheDocument()

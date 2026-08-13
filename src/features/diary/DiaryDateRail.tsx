@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { LayeredCircleNode } from '../../components/layered/LayeredCircleNode'
 import { SaoActionButton } from '../../components/sao/SaoActionButton'
 import { SaoDialogPopup } from '../../components/sao/SaoDialogPopup'
-import { dayTotals, isCheckedIn } from '../../domain/calculations'
+import { isCheckedIn } from '../../domain/calculations'
 import {
   addDays,
   parseLocalDate,
@@ -44,8 +44,6 @@ export function DiaryDateRail({
     toDateString(addDays(weekStart, index)),
   )
   const checkins = new Set(diary.filter(isCheckedIn).map((day) => day.date))
-  const selectedDay = diary.find((day) => day.date === selectedDate) ?? null
-  const totals = dayTotals(selectedDay)
   const today = todayString()
 
   const changeWeek = (offset: number) => {
@@ -54,7 +52,7 @@ export function DiaryDateRail({
 
   return (
     <section
-      className="diary-date-rail layered-window"
+      className="diary-date-rail layered-window layered-panel-shell"
       role="region"
       aria-label="七日日期導覽"
       data-tour-anchor="diary-date-rail"
@@ -65,19 +63,6 @@ export function DiaryDateRail({
           <strong>
             {selected.getFullYear()} 年 {selected.getMonth() + 1} 月
           </strong>
-          <div
-            className="date-rail-summary date-rail-telemetry"
-            aria-label="選定日期摘要"
-          >
-            <div className="date-rail-telemetry-item food">
-              <span>飲食攝取</span>
-              <strong>+{Math.round(totals.intake)} kcal</strong>
-            </div>
-            <div className="date-rail-telemetry-item exercise">
-              <span>運動消耗</span>
-              <strong>−{Math.round(totals.burn)} kcal</strong>
-            </div>
-          </div>
         </div>
         <div className="date-rail-actions">
           <button type="button" onClick={() => changeWeek(-1)}>
