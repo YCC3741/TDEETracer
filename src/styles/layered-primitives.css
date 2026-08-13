@@ -151,6 +151,10 @@
   --layered-circle-body-end: var(--layered-complete);
 }
 
+.layered-circle-node[data-tone='complete'] .layered-circle-node-body {
+  background: var(--layered-status-fill);
+}
+
 .layered-status {
   display: grid;
   min-width: 360px;
@@ -259,11 +263,7 @@
 }
 
 .layered-status-main progress::-webkit-progress-value {
-  background: linear-gradient(
-    90deg,
-    var(--layered-status-fill),
-    var(--layered-status-fill-light)
-  );
+  background: var(--layered-status-fill);
 }
 
 .layered-status-main progress::-moz-progress-bar {

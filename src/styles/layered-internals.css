@@ -356,11 +356,7 @@
   display: block;
   width: 58%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--layered-status-fill),
-    var(--layered-status-fill-light)
-  );
+  background: var(--layered-status-fill);
 }
 
 :root[data-page='diary'] .editor-view-tabs {
