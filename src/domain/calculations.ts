@@ -1,3 +1,4 @@
+import { activityLevelOf, isActivityLevelId } from './constants'
 import type {
   DiaryDay,
   GaugeStage,
@@ -24,7 +25,10 @@ export function calculateTdee(
   weight = profile.weight,
   age = profile.age,
 ): number {
-  return calculateBmr(weight, profile.height, age, profile.sex) * profile.factor
+  return (
+    calculateBmr(weight, profile.height, age, profile.sex) *
+    activityLevelOf(profile.activityLevel).factor
+  )
 }
 
 export function plannedDeficit(
@@ -48,9 +52,9 @@ export function intakeAllowance(profile: Profile, tdee: number): number {
   return tdee - plannedDeficit(profile, tdee, profile.mode)
 }
 
-/** The activity share of the TDEE, i.e. everything above the resting rate. */
-export function activityAllowance(bmr: number, factor: number): number {
-  return bmr * (factor - 1)
+/** Grams of protein for the day, at the rate the activity level carries. */
+export function proteinTarget(profile: Profile, weightKg: number): number {
+  return weightKg * activityLevelOf(profile.activityLevel).proteinPerKg
 }
 
 export function buildGauge(value: number, max: number): RouteGauge {
@@ -62,9 +66,17 @@ export function buildGauge(value: number, max: number): RouteGauge {
   }
 }
 
+/** The intake bar depletes, so a high remaining ratio is the safe end. */
 export function intakeStage(ratio: number): GaugeStage {
   if (ratio > 0.5) return 'safe'
   if (ratio > 0.2) return 'caution'
+  return 'critical'
+}
+
+/** The protein bar fills, so a high achieved ratio is the safe end. */
+export function proteinStage(ratio: number): GaugeStage {
+  if (ratio >= 0.8) return 'safe'
+  if (ratio >= 0.6) return 'caution'
   return 'critical'
 }
 
@@ -82,15 +94,20 @@ export function estimateExerciseCalories(
 export function dayTotals(day: DiaryDay | null | undefined): {
   intake: number
   burn: number
+  protein: number
 } {
   const entries = day?.entries ?? []
   return entries.reduce(
     (totals, entry) => {
-      if (entry.type === 'food') totals.intake += entry.kcal || 0
-      else totals.burn += entry.kcal || 0
+      if (entry.type === 'exercise') {
+        totals.burn += entry.kcal || 0
+        return totals
+      }
+      totals.intake += entry.kcal || 0
+      totals.protein += entry.protein ?? 0
       return totals
     },
-    { intake: 0, burn: 0 },
+    { intake: 0, burn: 0, protein: 0 },
   )
 }
 
@@ -146,13 +163,8 @@ export function dayKindLabel(day: DiaryDay): string {
 
 export function isProfileReady(profile: Profile | null): profile is Profile {
   if (!profile?.sex) return false
-  const common = [
-    profile.age,
-    profile.height,
-    profile.weight,
-    profile.target,
-    profile.factor,
-  ]
+  if (!isActivityLevelId(profile.activityLevel)) return false
+  const common = [profile.age, profile.height, profile.weight, profile.target]
   if (!common.every((value) => Number.isFinite(value) && value > 0))
     return false
   if (profile.target >= profile.weight) return false
@@ -184,7 +196,7 @@ export function buildSafetyWarnings(
   } else {
     const endTdee =
       calculateBmr(profile.target, profile.height, profile.age, profile.sex) *
-      profile.factor
+      activityLevelOf(profile.activityLevel).factor
     const endIntake = endTdee - (profile.deficit ?? 0)
     if (endIntake < floor) {
       messages.push({

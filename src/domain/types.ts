@@ -10,7 +10,7 @@ export interface Profile {
   height: number
   weight: number
   target: number
-  factor: number
+  activityLevel: ActivityLevelId
   intake: number | null
   deficit: number | null
   mode: PlanMode
@@ -23,6 +23,8 @@ export interface FoodEntry {
   time: string
   label: string
   kcal: number
+  /** Grams, or null when the visitor did not record it. */
+  protein: number | null
 }
 
 export interface ExerciseEntry {
@@ -83,10 +85,21 @@ export interface SimulationResult {
   finalWeight: number
 }
 
+/**
+ * A stable name for each activity level. The multiplier used to be the
+ * identity as well as the figure, which meant retuning a multiplier silently
+ * orphaned every profile that had stored it.
+ */
+export type ActivityLevelId =
+  'resting' | 'sedentary' | 'light' | 'moderate' | 'high' | 'extreme'
+
 export interface ActivityLevel {
+  id: ActivityLevelId
   factor: number
   name: string
   note: string
+  /** Daily protein target in grams per kilogram of body weight. */
+  proteinPerKg: number
 }
 
 export interface ExercisePreset {
@@ -155,7 +168,7 @@ export interface LocalUser {
 }
 
 export interface WorkspaceData {
-  version: 3
+  version: 4
   activeUserId: string
   users: LocalUser[]
 }

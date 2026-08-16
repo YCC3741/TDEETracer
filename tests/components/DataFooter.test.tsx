@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DataMenu } from '../../src/components/DataMenu'
+import { DATA_EXPORT_VERSION } from '../../src/domain/constants'
 import { NotificationStack } from '../../src/components/NotificationStack'
 import {
   STORAGE_PREFERRED_MODE,
@@ -135,7 +136,7 @@ describe('DataMenu interactions', () => {
 
     expect(await screen.findByText('已匯入資料並套用。')).toBeInTheDocument()
     expect(JSON.parse(storage.getItem(STORAGE_WORKSPACE) ?? 'null')).toEqual({
-      version: 3,
+      version: DATA_EXPORT_VERSION,
       activeUserId: importedUser.id,
       users: [importedUser],
     })

@@ -18,6 +18,7 @@ import type {
   WorkMode,
 } from '../domain/types'
 import { isProfileReady } from '../domain/calculations'
+import { DATA_EXPORT_VERSION } from '../domain/constants'
 import { latestWeightMeasurement } from '../domain/projection'
 import {
   createLocalUser,
@@ -68,7 +69,7 @@ function notificationId(): string {
 
 function workspaceFromState(state: AppDataState): WorkspaceData {
   return {
-    version: 3,
+    version: DATA_EXPORT_VERSION,
     activeUserId: state.activeUserId,
     users: state.users,
   }
@@ -328,7 +329,10 @@ export function AppDataProvider({
         workspace.activeUserId === userId
           ? users[0]!.id
           : workspace.activeUserId
-      return persist({ version: 3, activeUserId, users }, '無法刪除使用者。')
+      return persist(
+        { version: DATA_EXPORT_VERSION, activeUserId, users },
+        '無法刪除使用者。',
+      )
     },
     [notify, persist],
   )
@@ -575,7 +579,7 @@ export function AppDataProvider({
       try {
         replaceStoredData(storage, data)
         workspaceRef.current = {
-          version: 3,
+          version: DATA_EXPORT_VERSION,
           activeUserId: data.activeUserId,
           users: data.users,
         }

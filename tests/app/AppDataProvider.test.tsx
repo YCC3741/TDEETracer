@@ -61,6 +61,7 @@ function ProviderHarness() {
                   time: '',
                   label: '飲食',
                   kcal: 600,
+                  protein: null,
                 },
               ],
             }),

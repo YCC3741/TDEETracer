@@ -1,4 +1,9 @@
-import { parsePreferredMode, parseProfile } from '../domain/validation'
+import { DATA_EXPORT_VERSION } from '../domain/constants'
+import {
+  isValidWeightKg,
+  parsePreferredMode,
+  parseProfile,
+} from '../domain/validation'
 import type {
   AchievementId,
   LocalUser,
@@ -9,6 +14,7 @@ import type {
 } from '../domain/types'
 import { createEmptyWorkspace, normaliseName } from '../domain/workspace'
 import { migrateDiary } from './migrations'
+import { upgradeWorkspaceShape } from './schemaMigrations'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -52,10 +58,7 @@ function isStrictV3Diary(raw: unknown[], diary: PlanRecord['diary']): boolean {
     dates.add(day.date)
     if (
       rawDay.actualWeightKg !== null &&
-      (typeof rawDay.actualWeightKg !== 'number' ||
-        !Number.isFinite(rawDay.actualWeightKg) ||
-        rawDay.actualWeightKg < 25 ||
-        rawDay.actualWeightKg > 350)
+      !isValidWeightKg(rawDay.actualWeightKg)
     ) {
       return false
     }
@@ -218,8 +221,13 @@ function parseUser(value: unknown): LocalUser {
   }
 }
 
-export function parseWorkspaceData(value: unknown): WorkspaceData {
-  if (!isRecord(value) || value.version !== 3 || !Array.isArray(value.users)) {
+export function parseWorkspaceData(raw: unknown): WorkspaceData {
+  const value = upgradeWorkspaceShape(raw)
+  if (
+    !isRecord(value) ||
+    value.version !== DATA_EXPORT_VERSION ||
+    !Array.isArray(value.users)
+  ) {
     throw new Error('workspace 格式不正確')
   }
   const users = value.users.map(parseUser)
@@ -229,7 +237,7 @@ export function parseWorkspaceData(value: unknown): WorkspaceData {
   }
   const activeUserId = stringValue(value.activeUserId)
   if (!userIds.has(activeUserId)) throw new Error('activeUserId 不存在')
-  return { version: 3, activeUserId, users }
+  return { version: DATA_EXPORT_VERSION, activeUserId, users }
 }
 
 interface LegacySnapshot {
@@ -272,7 +280,7 @@ export function migrateLegacySnapshot(
     user.plans.push(plan)
     user.selectedPlanId = plan.id
   }
-  return { version: 3, activeUserId: user.id, users: [user] }
+  return { version: DATA_EXPORT_VERSION, activeUserId: user.id, users: [user] }
 }
 
 export function migrateLegacyExport(

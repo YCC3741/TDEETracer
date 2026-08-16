@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { CUSTOM_METRIC_KCAL_THRESHOLD } from '../../domain/constants'
 import type { DiaryDay, DiaryEntry } from '../../domain/types'
 import { EditRecordDialog, type EditRecordTarget } from './EditRecordDialog'
 
@@ -182,9 +183,15 @@ function EntryRowContent({ entry }: { entry: DiaryEntry }) {
           <small>
             {entry.minutes} 分
             {entry.met
-              ? ` · ${entry.met > 20 ? `${entry.met} kcal/h` : `MET ${entry.met}`}`
+              ? ` · ${
+                  entry.met > CUSTOM_METRIC_KCAL_THRESHOLD
+                    ? `${entry.met} kcal/h`
+                    : `MET ${entry.met}`
+                }`
               : ''}
           </small>
+        ) : entry.protein !== null ? (
+          <small>蛋白質 {Math.round(entry.protein)} g</small>
         ) : null}
       </div>
       <b>

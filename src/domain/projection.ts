@@ -1,4 +1,9 @@
-import { KCAL_PER_KG, MAX_DAYS, PLATEAU_EPSILON } from './constants'
+import {
+  activityLevelOf,
+  KCAL_PER_KG,
+  MAX_DAYS,
+  PLATEAU_EPSILON,
+} from './constants'
 import {
   actualDeficit,
   calculateBmr,
@@ -13,6 +18,7 @@ import {
   toDateString,
   todayString,
 } from './date'
+import { isValidWeightKg } from './validation'
 import type {
   ActualsByDate,
   DiaryDay,
@@ -47,7 +53,8 @@ export function simulateWeightPath(
     const date = toDateString(addDays(startDate, day))
     const age = profile.age + day / 365.25
     const tdee =
-      calculateBmr(weight, profile.height, age, profile.sex) * profile.factor
+      calculateBmr(weight, profile.height, age, profile.sex) *
+      activityLevelOf(profile.activityLevel).factor
     const actual = actuals[date]
     const deficit = actual
       ? actualDeficit(tdee, actual.intake, actual.burn)
@@ -87,12 +94,7 @@ export function buildWeightMeasurements(
 ): WeightMeasurement[] {
   const byDate = new Map<string, WeightMeasurement>()
   diary.forEach((day) => {
-    if (
-      day.actualWeightKg !== null &&
-      Number.isFinite(day.actualWeightKg) &&
-      day.actualWeightKg >= 25 &&
-      day.actualWeightKg <= 350
-    ) {
+    if (isValidWeightKg(day.actualWeightKg)) {
       byDate.set(day.date, { date: day.date, weight: day.actualWeightKg })
     }
   })

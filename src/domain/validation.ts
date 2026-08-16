@@ -1,3 +1,4 @@
+import { isActivityLevelId, WEIGHT_RANGE_KG } from './constants'
 import { todayString } from './date'
 import type { Profile, Sex, WorkMode } from './types'
 
@@ -11,6 +12,14 @@ function isFiniteNumber(value: unknown): value is number {
 
 function isNullableFiniteNumber(value: unknown): value is number | null {
   return value === null || isFiniteNumber(value)
+}
+
+export function isValidWeightKg(value: unknown): value is number {
+  return (
+    isFiniteNumber(value) &&
+    value >= WEIGHT_RANGE_KG.min &&
+    value <= WEIGHT_RANGE_KG.max
+  )
 }
 
 function isDateString(value: unknown): value is string {
@@ -37,7 +46,7 @@ export function parseProfile(value: unknown): Profile | null {
     !isFiniteNumber(value.height) ||
     !isFiniteNumber(value.weight) ||
     !isFiniteNumber(value.target) ||
-    !isFiniteNumber(value.factor) ||
+    !isActivityLevelId(value.activityLevel) ||
     !isNullableFiniteNumber(value.intake) ||
     !isNullableFiniteNumber(value.deficit)
   ) {
@@ -49,7 +58,7 @@ export function parseProfile(value: unknown): Profile | null {
     height: value.height,
     weight: value.weight,
     target: value.target,
-    factor: value.factor,
+    activityLevel: value.activityLevel,
     intake: value.intake,
     deficit: value.deficit,
     mode,

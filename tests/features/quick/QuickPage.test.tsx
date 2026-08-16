@@ -18,7 +18,7 @@ interface QuickValues {
   height: string
   weight: string
   target: string
-  factor: string
+  activityLevel: string
   intake: string
 }
 
@@ -28,16 +28,16 @@ const validValues: QuickValues = {
   height: '170',
   weight: '75',
   target: '65',
-  factor: '1.375',
+  activityLevel: 'light',
   intake: '1500',
 }
 
 const activityLabels: Record<string, string> = {
-  '1.2': '久坐',
-  '1.375': '輕度',
-  '1.55': '中度',
-  '1.725': '高度',
-  '1.9': '超高強度',
+  sedentary: '久坐',
+  light: '輕度',
+  moderate: '中度',
+  high: '高度',
+  extreme: '超高強度',
 }
 
 async function chooseOption(
@@ -79,7 +79,7 @@ async function fillQuickForm(
   await user.type(screen.getByLabelText('身高'), values.height)
   await user.type(screen.getByLabelText('起始體重'), values.weight)
   await user.type(screen.getByLabelText('目標體重'), values.target)
-  await chooseOption(user, '平均活動量', activityLabels[values.factor]!)
+  await chooseOption(user, '平均活動量', activityLabels[values.activityLevel]!)
   await user.click(screen.getByRole('button', { name: '下一步：熱量策略' }))
   await user.type(screen.getByLabelText('每日攝取熱量'), values.intake)
   await user.click(screen.getByRole('button', { name: '下一步：確認估算' }))
@@ -195,7 +195,7 @@ describe('QuickPage interactions', () => {
       height: 170,
       weight: 75,
       target: 65,
-      factor: 1.375,
+      activityLevel: 'light',
       intake: 1500,
       deficit: null,
       mode: 'intake',

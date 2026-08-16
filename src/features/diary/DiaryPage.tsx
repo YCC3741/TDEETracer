@@ -3,15 +3,14 @@ import { useAppData } from '../../app/AppDataContext'
 import { LayeredStatus } from '../../components/layered/LayeredStatus'
 import { SaoHpHud } from '../../components/sao/SaoHpHud'
 import {
-  activityAllowance,
   buildGauge,
-  calculateBmr,
   calculateTdee,
   dayTotals,
   intakeAllowance,
   isCheckedIn,
   isProfileReady,
   longestCheckinStreak,
+  proteinTarget,
   uniqueCheckinDays,
 } from '../../domain/calculations'
 import {
@@ -24,6 +23,7 @@ import {
   todayString,
   toDateString,
 } from '../../domain/date'
+import { WEIGHT_RANGE_MESSAGE } from '../../domain/constants'
 import {
   buildActualsByDate,
   latestWeightMeasurement,
@@ -31,6 +31,7 @@ import {
   simulateWeightPath,
 } from '../../domain/projection'
 import type { DiaryDay, DiaryEntry } from '../../domain/types'
+import { isValidWeightKg } from '../../domain/validation'
 import { DiaryDateRail } from './DiaryDateRail'
 import { DiaryEditor } from './DiaryEditor'
 import { DiaryProjection } from './DiaryProjection'
@@ -100,18 +101,14 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
   const hudWeight = exerciseWeight
   const hudGauges = useMemo(() => {
     if (!isProfileReady(profile) || hudWeight === null) return null
-    const tdee = calculateTdee(profile, hudWeight)
-    const bmr = calculateBmr(
-      hudWeight,
-      profile.height,
-      profile.age,
-      profile.sex,
+    const allowance = intakeAllowance(
+      profile,
+      calculateTdee(profile, hudWeight),
     )
-    const allowance = intakeAllowance(profile, tdee)
     const totals = dayTotals(selectedDay)
     return {
       intake: buildGauge(allowance - totals.intake, allowance),
-      activity: buildGauge(totals.burn, activityAllowance(bmr, profile.factor)),
+      protein: buildGauge(totals.protein, proteinTarget(profile, hudWeight)),
     }
   }, [hudWeight, profile, selectedDay])
 
@@ -237,8 +234,8 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
 
   const setActualWeight = (weight: number): boolean => {
     if (readOnly) return false
-    if (!Number.isFinite(weight) || weight < 25 || weight > 350) {
-      notify('danger', '請填寫 25–350 kg 之間的有效體重。')
+    if (!isValidWeightKg(weight)) {
+      notify('danger', WEIGHT_RANGE_MESSAGE)
       return false
     }
     if (!isValidDiaryDate(selectedDate)) {
@@ -308,7 +305,7 @@ export function DiaryPage({ readOnly = false }: DiaryPageProps) {
       {hudGauges ? (
         <SaoHpHud
           intake={hudGauges.intake}
-          activity={hudGauges.activity}
+          protein={hudGauges.protein}
           dateLabel={selectedDate.slice(5).replace('-', ' / ')}
         />
       ) : null}

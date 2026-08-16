@@ -10,7 +10,7 @@ function activityCopy(level: ActivityLevel): {
   label: string
   description: string
 } {
-  if (level.factor === 1) {
+  if (level.id === 'resting') {
     return {
       label: '睡覺／休息',
       description: '純躺著/睡覺 約等於 BMR 基礎代謝',
@@ -30,12 +30,12 @@ export function TdeeBoard({ bmr }: TdeeBoardProps) {
         {ACTIVITY_LEVELS.map((level) => {
           const copy = activityCopy(level)
           return (
-            <Tooltip.Root key={level.factor}>
+            <Tooltip.Root key={level.id}>
               <Tooltip.Trigger
                 render={
                   <article
                     className={
-                      level.factor === 1 ? 'tdee-item resting' : 'tdee-item'
+                      level.id === 'resting' ? 'tdee-item resting' : 'tdee-item'
                     }
                     tabIndex={0}
                   >

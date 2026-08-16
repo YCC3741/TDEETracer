@@ -1,3 +1,4 @@
+import { DATA_EXPORT_VERSION } from '../../src/domain/constants'
 import type {
   DiaryDay,
   ExportData,
@@ -13,7 +14,7 @@ export function makeProfile(overrides: Partial<Profile> = {}): Profile {
     height: 170,
     weight: 75,
     target: 65,
-    factor: 1.375,
+    activityLevel: 'light',
     intake: 1500,
     deficit: null,
     mode: 'intake',
@@ -38,6 +39,7 @@ export function makeDiaryDay(
         time: '12:00',
         label: '飲食',
         kcal: 500,
+        protein: null,
       },
     ],
     updatedAt: '2026-08-11T03:00:00.000Z',
@@ -50,7 +52,7 @@ export function makeExportData(
 ): ExportData {
   const user = makeLocalUser()
   return {
-    version: 3,
+    version: DATA_EXPORT_VERSION,
     exportedAt: '2026-08-11T03:00:00.000Z',
     activeUserId: user.id,
     users: [user],

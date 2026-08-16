@@ -4,6 +4,20 @@ export const femaleProfileFixture = {
   height: 170,
   weight: 75,
   target: 65,
+  activityLevel: 'light',
+  intake: 1500,
+  deficit: null,
+  mode: 'intake',
+  planStartedAt: '2026-08-11',
+} as const
+
+/** Frozen: the pre-workspace shape, where the multiplier was the identity. */
+export const legacyFemaleProfileFixture = {
+  sex: 'female',
+  age: 30,
+  height: 170,
+  weight: 75,
+  target: 65,
   factor: 1.375,
   intake: 1500,
   deficit: null,

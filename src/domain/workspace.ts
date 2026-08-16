@@ -1,3 +1,4 @@
+import { DATA_EXPORT_VERSION } from './constants'
 import { todayString } from './date'
 import type { LocalUser, PlanRecord, Profile, WorkspaceData } from './types'
 
@@ -24,7 +25,7 @@ export function profilesHaveSameSettings(
     left.height === right.height &&
     left.weight === right.weight &&
     left.target === right.target &&
-    left.factor === right.factor &&
+    left.activityLevel === right.activityLevel &&
     left.intake === right.intake &&
     left.deficit === right.deficit &&
     left.mode === right.mode
@@ -81,7 +82,7 @@ export function createPlanRecord(
 export function createEmptyWorkspace(now = new Date()): WorkspaceData {
   const user = createLocalUser('我的資料', now)
   return {
-    version: 3,
+    version: DATA_EXPORT_VERSION,
     activeUserId: user.id,
     users: [user],
   }

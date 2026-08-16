@@ -4,7 +4,7 @@ import {
   loadInitialData,
   replaceStoredData,
 } from '../src/storage/localStorageRepository'
-import { femaleProfileFixture } from './fixtures'
+import { legacyFemaleProfileFixture } from './fixtures'
 import { makeExportData } from './helpers/testData'
 
 class MemoryStorage implements Storage {
@@ -60,7 +60,7 @@ describe('local storage repository', () => {
   it('persists a stable plan date when loading a legacy profile', () => {
     const storage = new MemoryStorage()
     const legacyProfile = {
-      ...femaleProfileFixture,
+      ...legacyFemaleProfileFixture,
       planStartedAt: undefined,
     }
     storage.setItem(STORAGE_PROFILE, JSON.stringify(legacyProfile))
@@ -68,6 +68,7 @@ describe('local storage repository', () => {
     const loaded = loadInitialData(storage)
 
     const migratedProfile = loaded.users[0]?.quickDraft
+    expect(migratedProfile?.activityLevel).toBe('light')
     expect(migratedProfile?.planStartedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     expect(
       JSON.parse(storage.getItem(STORAGE_PROFILE) ?? 'null').planStartedAt,
@@ -76,7 +77,7 @@ describe('local storage repository', () => {
 
   it('keeps legacy migration idempotent and does not overwrite v3 on reload', () => {
     const storage = new MemoryStorage()
-    storage.setItem(STORAGE_PROFILE, JSON.stringify(femaleProfileFixture))
+    storage.setItem(STORAGE_PROFILE, JSON.stringify(legacyFemaleProfileFixture))
 
     const first = loadInitialData(storage)
     const firstWorkspace = storage.getItem(STORAGE_WORKSPACE)
@@ -85,14 +86,14 @@ describe('local storage repository', () => {
     expect(second.users).toEqual(first.users)
     expect(storage.getItem(STORAGE_WORKSPACE)).toBe(firstWorkspace)
     expect(storage.getItem(STORAGE_PROFILE)).toBe(
-      JSON.stringify(femaleProfileFixture),
+      JSON.stringify(legacyFemaleProfileFixture),
     )
   })
 
   it('never revives stale legacy data when an existing v3 document is malformed', () => {
     const storage = new MemoryStorage()
     storage.setItem(STORAGE_WORKSPACE, '{malformed')
-    storage.setItem(STORAGE_PROFILE, JSON.stringify(femaleProfileFixture))
+    storage.setItem(STORAGE_PROFILE, JSON.stringify(legacyFemaleProfileFixture))
 
     expect(() => loadInitialData(storage)).toThrow('workspace JSON 無法解析')
     expect(storage.getItem(STORAGE_WORKSPACE)).toBe('{malformed')

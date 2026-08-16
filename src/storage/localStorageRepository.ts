@@ -1,4 +1,5 @@
 import {
+  DATA_EXPORT_VERSION,
   STORAGE_ACHIEVEMENTS,
   STORAGE_DIARY,
   STORAGE_PREFERRED_MODE,
@@ -20,6 +21,7 @@ import {
 } from '../domain/validation'
 import { createEmptyWorkspace } from '../domain/workspace'
 import { diaryNeedsMigration, migrateDiary } from './migrations'
+import { upgradeProfileShape } from './schemaMigrations'
 import { migrateLegacySnapshot, parseWorkspaceData } from './workspaceMigration'
 
 function parseJson(raw: string | null): unknown {
@@ -33,7 +35,7 @@ function parseJson(raw: string | null): unknown {
 
 export function loadProfile(storage: Storage): Profile | null {
   const raw = parseJson(storage.getItem(STORAGE_PROFILE))
-  const profile = parseProfile(raw)
+  const profile = parseProfile(upgradeProfileShape(raw))
   if (profile && profileNeedsMigration(raw)) saveProfile(storage, profile)
   return profile
 }
@@ -129,7 +131,7 @@ export function replaceStoredData(storage: Storage, data: ExportData): void {
 
   try {
     saveWorkspace(storage, {
-      version: 3,
+      version: DATA_EXPORT_VERSION,
       activeUserId: data.activeUserId,
       users: data.users,
     })

@@ -3,11 +3,19 @@ import { LayeredBranchBar } from '../../components/layered/LayeredBranchBar'
 import { SelectField } from '../../components/SelectField'
 import { TimePicker } from '../../components/TimePicker'
 import { estimateExerciseCalories } from '../../domain/calculations'
-import { EXERCISE_PRESETS } from '../../domain/constants'
+import {
+  CUSTOM_METRIC_KCAL_THRESHOLD,
+  EXERCISE_PRESETS,
+  KCAL_INPUT_MAX,
+  WEIGHT_RANGE_KG,
+  WEIGHT_RANGE_MESSAGE,
+} from '../../domain/constants'
 import { currentTimeString } from '../../domain/date'
 import type { DiaryEntry, ExerciseEntry, FoodEntry } from '../../domain/types'
+import { isValidWeightKg } from '../../domain/validation'
 import { useTour } from '../tour/TourContext'
 import type { EntryCategory } from './EntryCategoryRail'
+import { EXERCISE_OPTIONS } from './exerciseOptions'
 
 interface EntryFormsProps {
   activeCategory: EntryCategory
@@ -18,24 +26,6 @@ interface EntryFormsProps {
   onAdd: (entry: DiaryEntry) => boolean
   onSetWeight: (weight: number) => boolean
   onError: (message: string) => void
-}
-
-const EXERCISE_SELECT_COPY: Record<
-  string,
-  { label: string; description: string }
-> = {
-  walk: { label: '走路', description: '一般步行 · MET 3.5' },
-  brisk: { label: '快走', description: '較快步行 · MET 4.3' },
-  jog: { label: '慢跑', description: '中高強度慢跑 · MET 7' },
-  run: { label: '跑步', description: '高強度跑步 · MET 9.8' },
-  bike_easy: { label: '休閒自行車', description: '低強度騎乘 · MET 4' },
-  bike_mod: { label: '中等自行車', description: '中等強度騎乘 · MET 8' },
-  swim: { label: '游泳', description: '一般強度游泳 · MET 7' },
-  weights: { label: '重訓', description: '一般重量訓練 · MET 5' },
-  custom: {
-    label: '自訂',
-    description: '自行輸入名稱與 MET 或每小時消耗熱量',
-  },
 }
 
 function entryId(kind: string): string {
@@ -63,6 +53,11 @@ export function FoodForm({
   const [calories, setCalories] = useState(
     initialEntry ? String(initialEntry.kcal) : '',
   )
+  const [protein, setProtein] = useState(
+    initialEntry?.protein === null || initialEntry === undefined
+      ? ''
+      : String(initialEntry.protein),
+  )
 
   const add = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -71,9 +66,17 @@ export function FoodForm({
       calories === '' ||
       !Number.isFinite(kcal) ||
       kcal < 0 ||
-      kcal > 10_000
+      kcal > KCAL_INPUT_MAX
     ) {
       onError('請填寫有效的飲食熱量。')
+      return
+    }
+    const grams = Number(protein)
+    if (
+      protein !== '' &&
+      (!Number.isFinite(grams) || grams < 0 || grams > 500)
+    ) {
+      onError('蛋白質請填 0 至 500 公克，或留白。')
       return
     }
     const entry: FoodEntry = {
@@ -82,10 +85,12 @@ export function FoodForm({
       time,
       label: initialEntry?.label ?? '飲食',
       kcal,
+      protein: protein === '' ? null : grams,
     }
     if (!onSubmit(entry)) return
     if (!initialEntry) {
       setCalories('')
+      setProtein('')
       setTime(currentTimeString())
     }
   }
@@ -98,12 +103,24 @@ export function FoodForm({
           熱量（kcal）
           <input
             min="0"
-            max="10000"
+            max={KCAL_INPUT_MAX}
             step="1"
             type="number"
             value={calories}
             onChange={(event) => setCalories(event.target.value)}
             placeholder="kcal"
+          />
+        </label>
+        <label>
+          蛋白質（g，選填）
+          <input
+            min="0"
+            max="500"
+            step="1"
+            type="number"
+            value={protein}
+            onChange={(event) => setProtein(event.target.value)}
+            placeholder="g"
           />
         </label>
       </div>
@@ -163,7 +180,8 @@ export function ExerciseForm({
   const preset = EXERCISE_PRESETS.find((item) => item.id === presetId)!
   const metric = preset.met === null ? Number(customMetric) : preset.met
   const numericMinutes = Number(minutes)
-  const treatAsCaloriesPerHour = presetId === 'custom' && metric > 20
+  const treatAsCaloriesPerHour =
+    presetId === 'custom' && metric > CUSTOM_METRIC_KCAL_THRESHOLD
   const estimated = useMemo(
     () =>
       weight && metric > 0 && numericMinutes > 0
@@ -222,14 +240,7 @@ export function ExerciseForm({
         <SelectField
           label="類型"
           value={presetId}
-          options={EXERCISE_PRESETS.map((item) => {
-            const copy = EXERCISE_SELECT_COPY[item.id]
-            return {
-              value: item.id,
-              label: copy?.label ?? item.name,
-              ...(copy ? { description: copy.description } : {}),
-            }
-          })}
+          options={EXERCISE_OPTIONS}
           onValueChange={(value) => {
             setPresetId(value)
             resetEstimate()
@@ -335,13 +346,8 @@ export function WeightForm({
   const save = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const numericWeight = Number(weight)
-    if (
-      weight === '' ||
-      !Number.isFinite(numericWeight) ||
-      numericWeight < 25 ||
-      numericWeight > 350
-    ) {
-      onError('請填寫 25–350 kg 之間的有效體重。')
+    if (weight === '' || !isValidWeightKg(numericWeight)) {
+      onError(WEIGHT_RANGE_MESSAGE)
       return
     }
     onSubmit(numericWeight)
@@ -354,8 +360,8 @@ export function WeightForm({
           實際體重（kg）
           <input
             required
-            min="25"
-            max="350"
+            min={WEIGHT_RANGE_KG.min}
+            max={WEIGHT_RANGE_KG.max}
             step="0.1"
             type="number"
             value={weight}

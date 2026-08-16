@@ -7,6 +7,7 @@ import {
   isProfileReady,
   plannedDeficit,
 } from '../../domain/calculations'
+import { PLATEAU_EPSILON } from '../../domain/constants'
 import { todayString } from '../../domain/date'
 import { simulateWeightPath } from '../../domain/projection'
 import type { Profile } from '../../domain/types'
@@ -49,7 +50,6 @@ export function QuickPage({ onDraftChanged }: QuickPageProps) {
       nextProfile.height,
       nextProfile.weight,
       nextProfile.target,
-      nextProfile.factor,
     ]
     if (!numericValues.every((value) => Number.isFinite(value) && value > 0)) {
       notify('danger', '請完整填寫有效數字。')
@@ -73,7 +73,9 @@ export function QuickPage({ onDraftChanged }: QuickPageProps) {
       savedProfile.sex,
     )
     const tdee = calculateTdee(savedProfile)
-    if (plannedDeficit(savedProfile, tdee, savedProfile.mode) < 5) {
+    if (
+      plannedDeficit(savedProfile, tdee, savedProfile.mode) < PLATEAU_EPSILON
+    ) {
       notify('danger', '目前設定沒有足夠熱量赤字，無法估算下降路徑。')
       return
     }

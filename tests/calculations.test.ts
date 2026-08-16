@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import {
   actualDeficit,
-  activityAllowance,
   buildGauge,
   calculateBmr,
   calculateTdee,
+  dayTotals,
   estimateExerciseCalories,
   intakeAllowance,
   intakeStage,
   longestCheckinStreak,
   plannedDeficit,
+  proteinStage,
+  proteinTarget,
   uniqueCheckinDays,
 } from '../src/domain/calculations'
 import {
@@ -55,6 +57,42 @@ describe('TDEE calculations', () => {
     expect(estimateExerciseCalories(3.5, 30, 75)).toBeCloseTo(131.25)
   })
 
+  it('sums the day figures and ignores unrecorded protein', () => {
+    const day = makeDiaryDay('2026-08-11', {
+      entries: [
+        {
+          id: 'a',
+          type: 'food',
+          time: '08:00',
+          label: '早餐',
+          kcal: 450,
+          protein: 30,
+        },
+        {
+          id: 'b',
+          type: 'food',
+          time: '12:00',
+          label: '午餐',
+          kcal: 600,
+          protein: null,
+        },
+        {
+          id: 'c',
+          type: 'exercise',
+          time: '19:00',
+          presetId: 'jog',
+          name: '慢跑',
+          met: 7,
+          minutes: 30,
+          kcal: 300,
+        },
+      ],
+    })
+
+    expect(dayTotals(day)).toEqual({ intake: 1050, burn: 300, protein: 30 })
+    expect(dayTotals(null)).toEqual({ intake: 0, burn: 0, protein: 0 })
+  })
+
   it('reads the daily intake allowance from the active plan mode', () => {
     expect(intakeAllowance(profile, expectedFemaleTdee)).toBe(1500)
     expect(
@@ -65,10 +103,26 @@ describe('TDEE calculations', () => {
     ).toBe(1500)
   })
 
-  it('derives the activity allowance from the declared activity level', () => {
-    expect(activityAllowance(1400, 1.375)).toBeCloseTo(525)
-    expect(activityAllowance(1400, 1.2)).toBeCloseTo(280)
-    expect(activityAllowance(1400, 1)).toBe(0)
+  it('derives the daily protein target from the activity level', () => {
+    expect(proteinTarget(profile, 70)).toBeCloseTo(126)
+    expect(
+      proteinTarget({ ...profile, activityLevel: 'sedentary' }, 70),
+    ).toBeCloseTo(112)
+    expect(
+      proteinTarget({ ...profile, activityLevel: 'moderate' }, 70),
+    ).toBeCloseTo(140)
+    expect(
+      proteinTarget({ ...profile, activityLevel: 'extreme' }, 70),
+    ).toBeCloseTo(168)
+  })
+
+  it('maps protein achievement to the rising bar stages', () => {
+    expect(proteinStage(1.4)).toBe('safe')
+    expect(proteinStage(0.8)).toBe('safe')
+    expect(proteinStage(0.79)).toBe('caution')
+    expect(proteinStage(0.6)).toBe('caution')
+    expect(proteinStage(0.59)).toBe('critical')
+    expect(proteinStage(0)).toBe('critical')
   })
 
   it('clamps gauge ratios while keeping the reported figure intact', () => {

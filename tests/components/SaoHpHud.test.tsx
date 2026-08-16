@@ -8,7 +8,7 @@ describe('SAO HP HUD', () => {
     const { container } = render(
       <SaoHpHud
         intake={buildGauge(900, 1500)}
-        activity={buildGauge(320, 525)}
+        protein={buildGauge(110, 135)}
         dateLabel="08 / 13"
       />,
     )
@@ -17,20 +17,18 @@ describe('SAO HP HUD', () => {
       screen.getByRole('img', { name: '飲食剩餘 900 大卡，上限 1500 大卡' }),
     ).toHaveAttribute('data-stage', 'safe')
     expect(
-      screen.getByRole('img', {
-        name: '運動消耗 320 大卡，活動量目標 525 大卡',
-      }),
-    ).toBeInTheDocument()
+      screen.getByRole('img', { name: '蛋白質 110 公克，目標 135 公克' }),
+    ).toHaveAttribute('data-stage', 'safe')
     expect(container).toHaveTextContent('900 / 1500 kcal')
     expect(container).toHaveTextContent('08 / 13')
-    expect(container).toHaveTextContent('320 / 525 kcal')
+    expect(container).toHaveTextContent('110 / 135 g')
   })
 
   it('clamps the emptied intake rail while reporting the overrun', () => {
     const { container } = render(
       <SaoHpHud
         intake={buildGauge(-220, 1500)}
-        activity={buildGauge(0, 525)}
+        protein={buildGauge(0, 135)}
         dateLabel="08 / 13"
       />,
     )
@@ -49,7 +47,7 @@ describe('SAO HP HUD', () => {
     render(
       <SaoHpHud
         intake={buildGauge(450, 1500)}
-        activity={buildGauge(0, 525)}
+        protein={buildGauge(90, 135)}
         dateLabel="08 / 13"
       />,
     )
@@ -58,13 +56,31 @@ describe('SAO HP HUD', () => {
       'data-stage',
       'caution',
     )
+    expect(screen.getByRole('img', { name: /蛋白質 90/ })).toHaveAttribute(
+      'data-stage',
+      'caution',
+    )
+  })
+
+  it('keeps the protein rail full while reporting the real figure', () => {
+    const { container } = render(
+      <SaoHpHud
+        intake={buildGauge(900, 1500)}
+        protein={buildGauge(160, 135)}
+        dateLabel="08 / 13"
+      />,
+    )
+    const rails = container.querySelectorAll('.sao-hp-rail')
+
+    expect(rails[1]).toHaveAttribute('data-stage', 'safe')
+    expect(container).toHaveTextContent('160 / 135 g')
   })
 
   it('drops the date window when a rail carries a single figure', () => {
     const { container } = render(
       <SaoHpHud
         intake={buildGauge(420, 1500)}
-        activity={buildGauge(320, 525)}
+        protein={buildGauge(60, 135)}
         dateLabel="08 / 13"
       />,
     )
@@ -73,5 +89,6 @@ describe('SAO HP HUD', () => {
     expect(rails).toHaveLength(2)
     expect(rails[0]?.querySelectorAll('.sao-hp-window')).toHaveLength(2)
     expect(rails[1]?.querySelectorAll('.sao-hp-window')).toHaveLength(1)
+    expect(rails[1]).toHaveAttribute('data-stage', 'critical')
   })
 })

@@ -3,7 +3,12 @@ import { LayeredBranchBar } from '../../components/layered/LayeredBranchBar'
 import { LayeredCircleNode } from '../../components/layered/LayeredCircleNode'
 import { LayeredStatus } from '../../components/layered/LayeredStatus'
 import { SelectField } from '../../components/SelectField'
-import { ACTIVITY_LEVELS } from '../../domain/constants'
+import {
+  isSelectableActivityLevelId,
+  KCAL_INPUT_MAX,
+  SELECTABLE_ACTIVITY_LEVELS,
+  WEIGHT_RANGE_KG,
+} from '../../domain/constants'
 import { todayString } from '../../domain/date'
 import type { PlanMode, Profile, Sex } from '../../domain/types'
 
@@ -21,7 +26,7 @@ interface FormValues {
   height: string
   weight: string
   target: string
-  factor: string
+  activityLevel: string
   intake: string
   deficit: string
 }
@@ -32,17 +37,15 @@ const emptyValues: FormValues = {
   height: '',
   weight: '',
   target: '',
-  factor: '',
+  activityLevel: '',
   intake: '',
   deficit: '',
 }
 
-const activityOptions = ACTIVITY_LEVELS.filter(
-  (level) => level.factor !== 1,
-).map((level) => {
+const activityOptions = SELECTABLE_ACTIVITY_LEVELS.map((level) => {
   const [label, description] = level.name.split('：', 2)
   return {
-    value: String(level.factor),
+    value: level.id,
     label: label || level.name,
     ...(description ? { description } : {}),
   }
@@ -56,7 +59,7 @@ function valuesFromProfile(profile: Profile | null): FormValues {
     height: String(profile.height),
     weight: String(profile.weight),
     target: String(profile.target),
-    factor: String(profile.factor),
+    activityLevel: profile.activityLevel,
     intake: profile.intake === null ? '' : String(profile.intake),
     deficit: profile.deficit === null ? '' : String(profile.deficit),
   }
@@ -76,17 +79,18 @@ function profileStepError(values: FormValues): string | null {
   if (!values.sex) return '請選擇性別。'
   if (!isWithin(values.age, 14, 100)) return '年齡必須介於 14 至 100 歲。'
   if (!isWithin(values.height, 100, 230)) return '身高必須介於 100 至 230 cm。'
-  if (!isWithin(values.weight, 25, 350))
-    return '起始體重必須介於 25 至 350 kg。'
-  if (!isWithin(values.target, 25, 350))
-    return '目標體重必須介於 25 至 350 kg。'
-  if (!isWithin(values.factor, 1.2, 1.9)) return '請選擇平均活動量。'
+  if (!isWithin(values.weight, WEIGHT_RANGE_KG.min, WEIGHT_RANGE_KG.max))
+    return `起始體重必須介於 ${WEIGHT_RANGE_KG.min} 至 ${WEIGHT_RANGE_KG.max} kg。`
+  if (!isWithin(values.target, WEIGHT_RANGE_KG.min, WEIGHT_RANGE_KG.max))
+    return `目標體重必須介於 ${WEIGHT_RANGE_KG.min} 至 ${WEIGHT_RANGE_KG.max} kg。`
+  if (!isSelectableActivityLevelId(values.activityLevel))
+    return '請選擇平均活動量。'
   return null
 }
 
 function strategyStepError(values: FormValues, mode: PlanMode): string | null {
   const selectedValue = mode === 'intake' ? values.intake : values.deficit
-  if (!isWithin(selectedValue, 1, 10_000)) {
+  if (!isWithin(selectedValue, 1, KCAL_INPUT_MAX)) {
     return mode === 'intake'
       ? '請輸入有效的每日攝取熱量。'
       : '請輸入有效的每日固定赤字。'
@@ -112,7 +116,7 @@ export function ProfileForm({
     values.height,
     values.weight,
     values.target,
-    values.factor,
+    values.activityLevel,
   ].filter(Boolean).length
   const activeStepLabel =
     activeStep === 1 ? '身體資料' : activeStep === 2 ? '熱量策略' : '確認估算'
@@ -167,14 +171,15 @@ export function ProfileForm({
       setStep(2)
       return
     }
-    if (!values.sex) return
+    if (!values.sex || !isSelectableActivityLevelId(values.activityLevel))
+      return
     onSubmit({
       sex: values.sex,
       age: Number(values.age),
       height: Number(values.height),
       weight: Number(values.weight),
       target: Number(values.target),
-      factor: Number(values.factor),
+      activityLevel: values.activityLevel,
       intake: values.intake === '' ? null : Number(values.intake),
       deficit: values.deficit === '' ? null : Number(values.deficit),
       mode,
@@ -330,8 +335,8 @@ export function ProfileForm({
                 起始體重
                 <input
                   required
-                  min="25"
-                  max="350"
+                  min={WEIGHT_RANGE_KG.min}
+                  max={WEIGHT_RANGE_KG.max}
                   step="0.1"
                   type="number"
                   value={values.weight}
@@ -343,8 +348,8 @@ export function ProfileForm({
                 目標體重
                 <input
                   required
-                  min="25"
-                  max="350"
+                  min={WEIGHT_RANGE_KG.min}
+                  max={WEIGHT_RANGE_KG.max}
                   step="0.1"
                   type="number"
                   value={values.target}
@@ -354,11 +359,11 @@ export function ProfileForm({
               </label>
               <SelectField
                 label="平均活動量"
-                name="factor"
+                name="activityLevel"
                 required
-                value={values.factor}
+                value={values.activityLevel}
                 options={activityOptions}
-                onValueChange={(value) => update('factor', value)}
+                onValueChange={(value) => update('activityLevel', value)}
               />
             </div>
             <div className="quick-step-actions">
@@ -418,7 +423,7 @@ export function ProfileForm({
                   <input
                     required
                     min="1"
-                    max="10000"
+                    max={KCAL_INPUT_MAX}
                     step="1"
                     type="number"
                     value={values.intake}
@@ -437,7 +442,7 @@ export function ProfileForm({
                   <input
                     required
                     min="1"
-                    max="10000"
+                    max={KCAL_INPUT_MAX}
                     step="1"
                     type="number"
                     value={values.deficit}
@@ -491,7 +496,7 @@ export function ProfileForm({
                 <dt>活動量</dt>
                 <dd>
                   {activityOptions.find(
-                    (option) => option.value === values.factor,
+                    (option) => option.value === values.activityLevel,
                   )?.label ?? '尚未選擇'}
                 </dd>
               </div>

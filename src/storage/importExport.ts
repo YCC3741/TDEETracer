@@ -2,6 +2,10 @@ import { DATA_EXPORT_VERSION } from '../domain/constants'
 import { todayString } from '../domain/date'
 import type { AppDataState, ExportData } from '../domain/types'
 import { validateExportEnvelope } from '../domain/validation'
+import {
+  FIRST_VERSIONED_SHAPE,
+  upgradeLegacyEnvelopeShape,
+} from './schemaMigrations'
 import { migrateLegacyExport, parseWorkspaceData } from './workspaceMigration'
 
 export function createExportData(state: AppDataState): ExportData {
@@ -29,7 +33,8 @@ export function parseImportData(json: string): ExportData {
     typeof raw === 'object' &&
     raw !== null &&
     'version' in raw &&
-    raw.version === DATA_EXPORT_VERSION
+    typeof raw.version === 'number' &&
+    raw.version >= FIRST_VERSIONED_SHAPE
   ) {
     const workspace = parseWorkspaceData(raw)
     return {
@@ -41,7 +46,7 @@ export function parseImportData(json: string): ExportData {
     }
   }
 
-  const envelope = validateExportEnvelope(raw)
+  const envelope = validateExportEnvelope(upgradeLegacyEnvelopeShape(raw))
   const workspace = migrateLegacyExport(
     envelope.profile,
     envelope.diary,

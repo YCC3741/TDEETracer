@@ -116,6 +116,43 @@ describe('DiaryPage date and entry interactions', () => {
     )
   })
 
+  it('records optional protein and reports it on the rail and the row', async () => {
+    const user = userEvent.setup()
+    const storage = makeDiaryStorage([])
+    renderDiary(storage)
+
+    await user.click(screen.getByRole('button', { name: '新增飲食' }))
+    await user.type(screen.getByLabelText('熱量（kcal）'), '450')
+    await user.type(screen.getByLabelText('蛋白質（g，選填）'), '30')
+    await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
+
+    expect(storedDiary(storage)[0].entries[0]).toMatchObject({
+      kcal: 450,
+      protein: 30,
+    })
+    expect(
+      screen.getByRole('img', { name: '蛋白質 30 公克，目標 135 公克' }),
+    ).toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: '查看當日紀錄，共 1 筆' }),
+    )
+    expect(screen.getByText('蛋白質 30 g')).toBeInTheDocument()
+  })
+
+  it('keeps a food entry unrecorded when protein is left blank', async () => {
+    const user = userEvent.setup()
+    const storage = makeDiaryStorage([])
+    renderDiary(storage)
+
+    await user.click(screen.getByRole('button', { name: '新增飲食' }))
+    await user.type(screen.getByLabelText('熱量（kcal）'), '450')
+    await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
+
+    expect(storedDiary(storage)[0].entries[0]).toMatchObject({ protein: null })
+    expect(screen.queryByText(/蛋白質 0 g/)).not.toBeInTheDocument()
+  })
+
   it('hides the calorie HUD until the plan profile is usable', () => {
     const storage = new TestStorage({
       [STORAGE_DIARY]: JSON.stringify([]),
@@ -195,9 +232,7 @@ describe('DiaryPage date and entry interactions', () => {
       screen.getByRole('img', { name: '飲食剩餘 1500 大卡，上限 1500 大卡' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('img', {
-        name: '運動消耗 0 大卡，活動量目標 563 大卡',
-      }),
+      screen.getByRole('img', { name: '蛋白質 0 公克，目標 135 公克' }),
     ).toBeInTheDocument()
     const weeklyProgress = screen.getByRole('progressbar', {
       name: '本週簽到進度',
@@ -358,6 +393,7 @@ describe('DiaryPage date and entry interactions', () => {
         time: '12:00',
         label: '飲食',
         kcal: 100 + index,
+        protein: null,
       })),
     })
     const { container } = renderDiary(makeDiaryStorage([day]))
@@ -424,6 +460,7 @@ describe('DiaryPage date and entry interactions', () => {
           time: '11:08',
           label: '飲食',
           kcal: 580,
+          protein: null,
         },
         {
           id: 'exercise_edit',
@@ -504,6 +541,7 @@ describe('DiaryPage date and entry interactions', () => {
           time: '12:00',
           label: '飲食',
           kcal: 500,
+          protein: null,
         },
       ],
     })
@@ -831,6 +869,12 @@ describe('DiaryPage date and entry interactions', () => {
     await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
     expect(storedDiary(storage)).toEqual([])
 
+    await user.clear(screen.getByLabelText('熱量（kcal）'))
+    await user.type(screen.getByLabelText('熱量（kcal）'), '450')
+    await user.type(screen.getByLabelText('蛋白質（g，選填）'), '600')
+    await user.click(screen.getByRole('button', { name: '＋ 新增飲食並計算' }))
+    expect(storedDiary(storage)).toEqual([])
+
     await user.click(screen.getByRole('button', { name: '新增運動' }))
     await user.clear(screen.getByLabelText('時長（分）'))
     await user.type(screen.getByLabelText('時長（分）'), '601')
@@ -848,6 +892,7 @@ describe('DiaryPage date and entry interactions', () => {
           time: '08:00',
           label: '飲食',
           kcal: 300,
+          protein: null,
         },
         {
           id: 'food-2',
@@ -855,6 +900,7 @@ describe('DiaryPage date and entry interactions', () => {
           time: '12:00',
           label: '飲食',
           kcal: 500,
+          protein: null,
         },
       ],
     })

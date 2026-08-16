@@ -4,6 +4,7 @@ import type {
   ExerciseEntry,
   FoodEntry,
 } from '../domain/types'
+import { isValidWeightKg } from '../domain/validation'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -17,13 +18,14 @@ function stringOr(value: unknown, fallback: string): string {
   return typeof value === 'string' ? value : fallback
 }
 
-function actualWeightOrNull(value: unknown): number | null {
-  return typeof value === 'number' &&
-    Number.isFinite(value) &&
-    value >= 25 &&
-    value <= 350
+function proteinOrNull(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
     ? value
     : null
+}
+
+function actualWeightOrNull(value: unknown): number | null {
+  return isValidWeightKg(value) ? value : null
 }
 
 function migrateEntry(raw: unknown, fallbackId: string): DiaryEntry | null {
@@ -39,6 +41,7 @@ function migrateEntry(raw: unknown, fallbackId: string): DiaryEntry | null {
       time,
       label: stringOr(raw.label, '飲食'),
       kcal,
+      protein: proteinOrNull(raw.protein),
     }
     return entry
   }
@@ -94,6 +97,7 @@ export function migrateDiaryDay(
       time: '',
       label: '攝取（舊格式）',
       kcal: intake,
+      protein: null,
     })
   }
 

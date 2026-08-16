@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { DATA_EXPORT_VERSION } from '../src/domain/constants'
 import type { AppDataState } from '../src/domain/types'
 import { STORAGE_THEME } from '../src/features/theme/themeStorage'
 import {
@@ -21,7 +22,7 @@ describe('JSON import and export', () => {
     window.localStorage.setItem(STORAGE_THEME, 'dark')
     const serialised = serialiseExportData(
       createExportData({
-        version: 3,
+        version: DATA_EXPORT_VERSION,
         activeUserId: user.id,
         users: [user],
         notifications: [],
@@ -53,13 +54,13 @@ describe('JSON import and export', () => {
       achievementsUnlocked: ['total:1'],
     })
     const state: AppDataState = {
-      version: 3,
+      version: DATA_EXPORT_VERSION,
       activeUserId: user.id,
       users: [user],
       notifications: [],
     }
     const parsed = parseImportData(serialiseExportData(createExportData(state)))
-    expect(parsed.version).toBe(3)
+    expect(parsed.version).toBe(DATA_EXPORT_VERSION)
     expect(parsed.users).toEqual([user])
     expect(parsed.activeUserId).toBe(user.id)
   })
@@ -80,6 +81,7 @@ describe('JSON import and export', () => {
               time: '12:00',
               label: '午餐',
               kcal: 520,
+              protein: null,
             },
             {
               id: 'exercise_complete',
@@ -119,7 +121,7 @@ describe('JSON import and export', () => {
       preferredMode: 'quick',
     })
     const state: AppDataState = {
-      version: 3,
+      version: DATA_EXPORT_VERSION,
       activeUserId: secondUser.id,
       users: [firstUser, secondUser],
       notifications: [{ id: 'transient', type: 'ok', text: '不應匯出' }],
@@ -128,7 +130,7 @@ describe('JSON import and export', () => {
     const parsed = parseImportData(serialiseExportData(createExportData(state)))
 
     expect(parsed).toMatchObject({
-      version: 3,
+      version: DATA_EXPORT_VERSION,
       activeUserId: secondUser.id,
       users: [firstUser, secondUser],
     })
@@ -164,7 +166,7 @@ describe('JSON import and export', () => {
     const migratedPlan = parsed.users[0]?.plans[0]
     expect(migratedPlan?.diary[0]?.entries).toHaveLength(2)
     expect(migratedPlan?.diary[0]?.actualWeightKg).toBeNull()
-    expect(parsed.version).toBe(3)
+    expect(parsed.version).toBe(DATA_EXPORT_VERSION)
   })
 
   it('strictly rejects invalid v3 diary entries instead of dropping them', () => {
@@ -176,6 +178,7 @@ describe('JSON import and export', () => {
           time: '12:00',
           label: '飲食',
           kcal: Number.NaN,
+          protein: null,
         },
       ],
     })
@@ -204,6 +207,7 @@ describe('JSON import and export', () => {
           time: '12:00',
           label: '午餐',
           kcal: 500,
+          protein: null,
         },
         {
           id: 'same-entry',
@@ -211,6 +215,7 @@ describe('JSON import and export', () => {
           time: '18:00',
           label: '晚餐',
           kcal: 600,
+          protein: null,
         },
       ],
     })

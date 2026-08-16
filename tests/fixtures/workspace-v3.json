@@ -1,0 +1,80 @@
+{
+  "version": 3,
+  "exportedAt": "2026-08-11T03:00:00.000Z",
+  "activeUserId": "user_frozen_v3",
+  "users": [
+    {
+      "id": "user_frozen_v3",
+      "name": "我的資料",
+      "quickDraft": {
+        "sex": "female",
+        "age": 30,
+        "height": 170,
+        "weight": 75,
+        "target": 65,
+        "factor": 1.375,
+        "intake": 1500,
+        "deficit": null,
+        "mode": "intake",
+        "planStartedAt": "2026-08-11"
+      },
+      "plans": [
+        {
+          "id": "plan_frozen_v3",
+          "name": "主要計畫",
+          "status": "active",
+          "profile": {
+            "sex": "male",
+            "age": 41,
+            "height": 178,
+            "weight": 92.5,
+            "target": 80,
+            "factor": 1.9,
+            "intake": null,
+            "deficit": 500,
+            "mode": "deficit",
+            "planStartedAt": "2026-08-01"
+          },
+          "diary": [
+            {
+              "date": "2026-08-09",
+              "actualWeightKg": 91.8,
+              "exerciseStatus": "yes",
+              "note": "",
+              "entries": [
+                {
+                  "id": "f_frozen",
+                  "type": "food",
+                  "time": "12:00",
+                  "label": "午餐",
+                  "kcal": 520
+                },
+                {
+                  "id": "e_frozen",
+                  "type": "exercise",
+                  "time": "19:00",
+                  "presetId": "jog",
+                  "name": "慢跑",
+                  "met": 7,
+                  "minutes": 35,
+                  "kcal": 320
+                }
+              ],
+              "updatedAt": "2026-08-09T12:00:00.000Z"
+            }
+          ],
+          "sourcePlanId": null,
+          "createdAt": "2026-08-01T03:00:00.000Z",
+          "updatedAt": "2026-08-09T12:00:00.000Z",
+          "archivedAt": null
+        }
+      ],
+      "selectedPlanId": "plan_frozen_v3",
+      "preferredMode": "diary",
+      "achievementsSeen": ["total:1"],
+      "achievementsUnlocked": ["total:1"],
+      "createdAt": "2026-08-01T03:00:00.000Z",
+      "updatedAt": "2026-08-09T12:00:00.000Z"
+    }
+  ]
+}
